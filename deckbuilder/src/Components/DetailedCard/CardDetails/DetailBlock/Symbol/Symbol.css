@@ -1,0 +1,10 @@
+.symbol {
+    height: 1rem;
+    margin-right: 1px;
+    margin-left: 1px;
+    margin-bottom: 0px;
+}
+
+.shadow {
+    filter: drop-shadow(-1px 1px 1px #000);
+}
