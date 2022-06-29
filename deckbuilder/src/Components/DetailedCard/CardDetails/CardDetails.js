@@ -65,7 +65,12 @@ function CardDetails({card, addToDeck, alternateArts,getDetailedCard}) {
                                 }</p>
                             </div> : <></>}
                             <div className='detail-block'><p><strong>{(card.printed_type_line ? card.printed_type_line : card.type_line)}</strong></p></div>
-                            
+                            {card.oracle_text ? 
+                                <div className={card.power || card.flavor_text || card.loyalty ? "detail-block" : ""}>
+                                <OracleText card_text={card.printed_text ? card.printed_text : card.oracle_text} />
+                            </div>
+                            :
+                            <></>}
                             {card.flavor_text ? <div className={card.power || card.loyalty ? "detail-block" : ""}><p>{card.lang == "ja" || card.lang == "zhs" || card.lang == "zht" ? card.flavor_text : <i>{card.flavor_text}</i>}</p></div> : <></>}
                             {card.power ? <div className='right-align'><p><strong>{card.power}/{card.toughness}</strong></p></div> : <></>}
                             {card.loyalty ? <div className='right-align'><p><strong>{card.loyalty}</strong></p></div> : <></>}
