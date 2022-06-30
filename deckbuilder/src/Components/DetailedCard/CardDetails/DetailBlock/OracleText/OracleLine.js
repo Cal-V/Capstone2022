@@ -6,8 +6,8 @@ function OracleLine({line,reminder}) {
     const symbolRegex = /\{[A-Z/0-9∞½]+\}/g
     const textRegex = /[A-Z/0-9∞½]+(?=})/g
 
-    const oracleTextSymbols = line[0].match(textRegex) || []
-    const oracleTextWords = line[0].split(symbolRegex) || []
+    const oracleTextSymbols = line.match(textRegex) || []
+    const oracleTextWords = line.split(symbolRegex) || []
 
     return (
         <div className="inline">

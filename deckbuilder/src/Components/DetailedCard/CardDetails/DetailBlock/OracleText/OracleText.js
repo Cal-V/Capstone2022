@@ -6,11 +6,14 @@ function OracleText({card_text}) {
     //split text into each line
     const oracleTextLines = card_text.split("\n")
     
-    const iRegex = /(\([+{},/:. 'A-Za-z/0-9∞½-]+\))/g
+    const iRegex = /\([+{}",/:. 'A-Za-z/0-9∞½-]+\)|(Adamant|Addendum|Alliance|Battalion|Bloodrush|Channel|Chroma|Cohort|Constellation|Converge|Council's dilemma|Coven|Delirium|Domain|Eminence|Enrage|Fateful hour|Ferocious|Formidable|Grandeur|Hellbent|Heroic|Imprint|Inspired|Join forces|Kinship|Landfall|Lieutenant|Magecraft|Metalcraft|Morbid|Pack tactics|Parley|Radiance|Raid|Rally|Revolt|Spell mastery|Strive|Sweep|Tempting offer|Underdog|Undergrowth|Will of the council)(?= — )/g
 
     const oracleTextGroups = oracleTextLines.map((line) => (
-        line.split(iRegex)
+        line.split(iRegex).filter(x => {
+            return x != null && !x.match(/(Adamant|Addendum|Alliance|Battalion|Bloodrush|Channel|Chroma|Cohort|Constellation|Converge|Council's dilemma|Coven|Delirium|Domain|Eminence|Enrage|Fateful hour|Ferocious|Formidable|Grandeur|Hellbent|Heroic|Imprint|Inspired|Join forces|Kinship|Landfall|Lieutenant|Magecraft|Metalcraft|Morbid|Pack tactics|Parley|Radiance|Raid|Rally|Revolt|Spell mastery|Strive|Sweep|Tempting offer|Underdog|Undergrowth|Will of the council)$/);
+        })
     ))
+
     const oracleTextFlavors = oracleTextLines.map(line => (
         line.match(iRegex)
     ))
@@ -19,9 +22,13 @@ function OracleText({card_text}) {
         <>
             {card_text.length > 0 ?
                 <>{
-                oracleTextGroups.map((line,lineIndex) => (
-                    <div key={lineIndex} className="oracle-text-holder">
-                        <OracleLine line={line} reminder={false} className="inline" />{oracleTextFlavors[lineIndex] ? <OracleLine className="inline" line={oracleTextFlavors[lineIndex]} reminder={true}/> : <></>}
+                oracleTextGroups.map((group,groupIndex) => (
+                    <div key={groupIndex} className="oracle-text-holder">
+                        {group.map((line,lineIndex) => (
+                            <div key={lineIndex} className="inline">
+                                <OracleLine line={line} reminder={false} className="inline" />{oracleTextFlavors?.[groupIndex]?.[lineIndex] ? <OracleLine className="inline" line={oracleTextFlavors[groupIndex][lineIndex]} reminder={true}/> : <></>}
+                            </div>
+                        ))}
                     </div>
                 ))
             }</>
