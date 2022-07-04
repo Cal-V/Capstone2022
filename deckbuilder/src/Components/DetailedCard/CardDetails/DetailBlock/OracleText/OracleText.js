@@ -1,17 +1,29 @@
 import React from 'react'
 import OracleLine from './OracleLine'
+import {useEffect, useState} from "react"
+import flavorWords from "./flavorWords.js"
 
 function OracleText({card_text}) {
+
+    const [iRegex, setIRegex] = useState(/\([+{}",/:. 'A-Za-z/0-9∞½-]+\)/g)
+
+    useEffect(() => {
+        makeRegex();
+    }, [])
+
+    const makeRegex = () => {
+        let flavors = flavorWords.replace("\n","|")
+        let re = new RegExp(`\\([+{}",/:. 'A-Za-z/0-9∞½-]+\\)|${flavors}`, 'g')
+        setIRegex(re)
+    }
     
     //split text into each line
     const oracleTextLines = card_text.split("\n")
     
-    const iRegex = /\([+{}",/:. 'A-Za-z/0-9∞½-]+\)|(Adamant|Addendum|Alliance|Battalion|Bloodrush|Channel|Chroma|Cohort|Constellation|Converge|Council's dilemma|Coven|Delirium|Domain|Eminence|Enrage|Fateful hour|Ferocious|Formidable|Grandeur|Hellbent|Heroic|Imprint|Inspired|Join forces|Kinship|Landfall|Lieutenant|Magecraft|Metalcraft|Morbid|Pack tactics|Parley|Radiance|Raid|Rally|Revolt|Spell mastery|Strive|Sweep|Tempting offer|Underdog|Undergrowth|Will of the council)(?= — )/g
+    //const iRegex = /\([+{}",/:. 'A-Za-z/0-9∞½-]+\)|(Adamant|Addendum|Alliance|Battalion|Bloodrush|Channel|Chroma|Cohort|Constellation|Converge|Council's dilemma|Coven|Delirium|Domain|Eminence|Enrage|Fateful hour|Ferocious|Formidable|Grandeur|Hellbent|Heroic|Imprint|Inspired|Join forces|Kinship|Landfall|Lieutenant|Magecraft|Metalcraft|Morbid|Pack tactics|Parley|Radiance|Raid|Rally|Revolt|Spell mastery|Strive|Sweep|Tempting offer|Underdog|Undergrowth|Will of the council)(?= — )/g
 
     const oracleTextGroups = oracleTextLines.map((line) => (
-        line.split(iRegex).filter(x => {
-            return x != null && !x.match(/(Adamant|Addendum|Alliance|Battalion|Bloodrush|Channel|Chroma|Cohort|Constellation|Converge|Council's dilemma|Coven|Delirium|Domain|Eminence|Enrage|Fateful hour|Ferocious|Formidable|Grandeur|Hellbent|Heroic|Imprint|Inspired|Join forces|Kinship|Landfall|Lieutenant|Magecraft|Metalcraft|Morbid|Pack tactics|Parley|Radiance|Raid|Rally|Revolt|Spell mastery|Strive|Sweep|Tempting offer|Underdog|Undergrowth|Will of the council)$/);
-        })
+        line.split(iRegex)
     ))
 
     const oracleTextFlavors = oracleTextLines.map(line => (
