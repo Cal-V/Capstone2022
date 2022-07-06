@@ -3,6 +3,7 @@ const express = require("express");
 const app = express();
 const bodyParser = require('body-parser');
 const PORT = 4000;
+const routes = require("./routes/routes")
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -15,11 +16,7 @@ app.get("/", function(req, res){
     
 });
 
-app.post("/api/login",  async (req, res) => {
-    let user = req.body.user;
-    console.log(user)
-    return res.json({username: "user"});
-});
+app.post("/api/login",  routes.login)
 
 app.get("/deck/read/:id", async (req,res) => {
     let id = req.params.id;
