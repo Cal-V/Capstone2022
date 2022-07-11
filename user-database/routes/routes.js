@@ -8,15 +8,11 @@ const getIDByUsername = async username => {
 
     let foundUser;
 
-    console.log(username)
-
     const client = await MongoClient.connect(uri)
     try {
         const collection = client.db(dbName).collection(collectionName);
         const query = {username}
-        console.log(query)
         foundUser = await collection.findOne(query)
-        console.log(foundUser)
         //close client
     }catch(err){
         console.log('DAL.getDeckByData')
@@ -25,21 +21,70 @@ const getIDByUsername = async username => {
     }finally {
         client.close();
     }
-    return foundUser._id;
+    console.log(foundUser)
+    return foundUser?._id;
+}
+
+const getUserByUsername = async username => {
+    let foundUser;
+
+    const client = await MongoClient.connect(uri)
+    try {
+        const collection = client.db(dbName).collection(collectionName);
+        const query = {username}
+        foundUser = await collection.findOne(query)
+        //close client
+    }catch(err){
+        console.log('DAL.getDeckByData')
+        console.log(err)
+        console.log('/DAL.getDeckByData')
+    }finally {
+        client.close();
+    }
+    console.log(foundUser)
+    return foundUser;
+}
+
+const getUserByID = async id => {
+    let foundUser;
+
+    const client = await MongoClient.connect(uri)
+    try {
+        const collection = client.db(dbName).collection(collectionName);
+        const query = {_id: ObjectId(id)}
+        foundUser = await collection.findOne(query)
+        //close client
+    }catch(err){
+        console.log('DAL.getDeckByData')
+        console.log(err)
+        console.log('/DAL.getDeckByData')
+    }finally {
+        client.close();
+    }
+    console.log(foundUser)
+    return foundUser;
 }
 
 exports.login = async (req, res) => {
     let user = req.body.user;
-    console.log(user)
-    return res.json({uuid: "user"});
+    const foundUser = await getUserByUsername(user.username)
+    console.log(foundUser?._id)
+    if (foundUser == null) {
+        return res.json({error: "Account doesn't exist"})
+    }
+    //do passwords better
+    if (foundUser.password != user.password) {
+        return res.json({error: "Incorrect Password"})
+    }
+    return res.json({uuid: foundUser._id});
 };
 
 exports.signUp = async (req, res) => {
+    console.log("sign up")
     //post with user data
     let user = req.body.user
     //hash password
     //save new user to database
-    console.log(req.body.user)
     const client = await MongoClient.connect(uri)
 
     try {
