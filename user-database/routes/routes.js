@@ -98,8 +98,8 @@ exports.signUp = async (req, res) => {
     }finally {
         client.close();
     }
-    let uuid = await getIDByUsername(user.username)
-    return res.json({uuid})
+    let newUser = await getUserByUsername(user.username)
+    return res.json({uuid: newUser._id})
 }
 
 exports.addDeck = async (req, res) => {
