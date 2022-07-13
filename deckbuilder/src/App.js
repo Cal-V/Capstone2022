@@ -48,6 +48,7 @@ function App() {
     );
     console.log(response.data)
     
+    //checking if there's an error sent by the server
     if (!response.data.error) {
       // set the state of the user
       setUser(response.data);

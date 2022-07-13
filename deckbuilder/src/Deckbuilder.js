@@ -200,6 +200,8 @@ function Deckbuilder() {
             </select>
             <button className='nav-button nav-item' onClick={() => setSeeDeck(!seeDeck)}>{(seeDeck ? "Go Back" : "See Deck")}</button>
             <button className='nav-button nav-item' onClick={() => {setSeeDeck(false);getData("https://api.scryfall.com/cards/random")}}>Random Card</button>
+            <button className='nav-button nav-item' onClick={() => console.log("login")}>Login</button>
+            <button className='nav-button nav-item' onClick={() => console.log("signup")}>Sign up</button>
         </nav>
         <div className='nav-spacer'></div>
         {(seeDeck ?
