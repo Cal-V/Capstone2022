@@ -5,7 +5,7 @@ import flavorWords from "./flavorWords.js"
 
 function OracleText({card_text}) {
 
-    const [iRegex, setIRegex] = useState(/\([+{}",/:. 'A-Za-z/0-9∞½-]+\)/g)
+    const [iRegex, setIRegex] = useState()
 
     useEffect(() => {
         makeRegex();
@@ -13,7 +13,7 @@ function OracleText({card_text}) {
 
     const makeRegex = () => {
         let flavors = flavorWords.replace("\n","|")
-        let re = new RegExp(`\\([+{}",/:. 'A-Za-z/0-9∞½-]+\\)|${flavors}`, 'g')
+        let re = new RegExp(`\\([+{}",/:. 'A-Za-z;/0-9∞½-]+\\)|${flavors}`, 'g')
         setIRegex(re)
     }
     

@@ -24,7 +24,7 @@ nav {
   border: none;
   border-bottom: #FFEBCC 3px solid;
   height: 2em;
-  color: white;
+  color: #FFEBCC;
   width: 60%;
   font-family: 'Roboto Slab', serif;
   margin: auto;
@@ -49,6 +49,7 @@ nav {
   text-decoration: none;
   display: inline-block;
   margin: 0 .75em;
+  font-family: 'Roboto Slab', serif;
 }
 
 .nav-button {

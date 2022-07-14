@@ -3,8 +3,9 @@ import CardList from './Components/CardList/CardList.js';
 import DetailedCard from "./Components/DetailedCard/CardDetails/CardDetails.js"
 import {useState, useEffect} from "react"
 import Deck from './Components/Deck/Deck.js';
+import Modal from './Components/Modal.js';
 
-function Deckbuilder() {
+function Deckbuilder({userMethods,isLoggedIn}) {
     const [searchTerm, setSearchTerm] = useState("");
     const [order, setOrder] = useState("name");
     const [direction, setDirection] = useState("auto");
@@ -15,6 +16,8 @@ function Deckbuilder() {
     const [deck,setDeck] = useState([])
     const [seeDeck, setSeeDeck] = useState(false)
     const [deckUUID, setDeckUUID] = useState(null)
+
+    const [loginVisible,setLoginVisible] = useState(false)
 
     useEffect(() => {
         getData("https://api.scryfall.com/cards/random")
@@ -35,7 +38,6 @@ function Deckbuilder() {
             else {
             setCards(data.data || []);
             if (data.data.length == 1) {
-                console.log(data)
                 let artUrl = data.data[0].prints_search_uri;
                 artUrl = `${artUrl.substring(0,artUrl.indexOf("&unique=prints"))} lang:${data.data[0].lang}&unique=prints`
                 getArts(artUrl)
@@ -200,8 +202,12 @@ function Deckbuilder() {
             </select>
             <button className='nav-button nav-item' onClick={() => setSeeDeck(!seeDeck)}>{(seeDeck ? "Go Back" : "See Deck")}</button>
             <button className='nav-button nav-item' onClick={() => {setSeeDeck(false);getData("https://api.scryfall.com/cards/random")}}>Random Card</button>
-            <button className='nav-button nav-item' onClick={() => console.log("login")}>Login</button>
-            <button className='nav-button nav-item' onClick={() => console.log("signup")}>Sign up</button>
+            {isLoggedIn ? 
+                <button className='nav-button nav-item nav-button-right' onClick={() => userMethods.handleLogout()}>Logout</button>
+                :
+                <button className='nav-button nav-item nav-button-right' onClick={() => setLoginVisible(!loginVisible)}>Login/Signup</button>
+            }
+            
         </nav>
         <div className='nav-spacer'></div>
         {(seeDeck ?
@@ -217,6 +223,10 @@ function Deckbuilder() {
             </section>
             )
         )}
+        {loginVisible ?
+        <Modal userMethods={userMethods} setLoginVisible={setLoginVisible}/>
+        :
+        <></>}
         </div>
     );
 }

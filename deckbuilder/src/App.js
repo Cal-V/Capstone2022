@@ -9,12 +9,14 @@ function App() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [user, setUser] = useState();
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   useEffect(() => {
     const loggedInUser = localStorage.getItem("user");
     if (loggedInUser) {
       const foundUser = JSON.parse(loggedInUser);
       setUser(foundUser);
+      setIsLoggedIn(true)
     }
   }, []);
 
@@ -34,6 +36,7 @@ function App() {
     setUser();
     setUsername("");
     setPassword("");
+    setIsLoggedIn(false)
     localStorage.clear();
   };
 
@@ -52,13 +55,14 @@ function App() {
     if (!response.data.error) {
       // set the state of the user
       setUser(response.data);
+      setIsLoggedIn(true)
       // store the user in localStorage
       localStorage.setItem("user", JSON.stringify(response.data));
     }
   };
 
   return (
-    <Deckbuilder />
+    <Deckbuilder userMethods={{handleLogout,handleSignUp,handleSubmit,setUsername,username,setPassword,password}} isLoggedIn={isLoggedIn}/>
   )
 }
 
