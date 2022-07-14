@@ -7,15 +7,14 @@ function Modal({userMethods,setLoginVisible}) {
             <div className='modal-main'>
                 <form id="login-form" onSubmit={userMethods.handleSubmit}>
                     <label htmlFor="username">Username: </label>
-                    <input type="text" value={userMethods.username} placeholder="Username" onChange={({ target }) => userMethods.setUsername(target.value)}/>
-                    <div>
+                    <input className='modal-text-box' type="text" value={userMethods.username} placeholder="Username" onChange={({ target }) => userMethods.setUsername(target.value)}/>
                     <label htmlFor="password">Password: </label>
-                    <input type="password" value={userMethods.password} placeholder="Password" onChange={({ target }) => userMethods.setPassword(target.value)}/>
-                    </div>
-                    <button type="submit">Login</button>
+                    <input className='modal-text-box' type="password" value={userMethods.password} placeholder="Password" onChange={({ target }) => userMethods.setPassword(target.value)}/>
+                    <br />
+                    <button  className='login-form-button'type="submit">Login</button>
+                    <button className='login-form-button'  onClick={userMethods.handleSignUp}>Sign Up</button>
                 </form>
-                <button onClick={userMethods.handleSignUp}>Sign Up</button>
-                <button className='transform-button' onClick={() => setLoginVisible(false)}>Close</button>
+                <button className='login-form-button' id='modal-close-button' onClick={() => setLoginVisible(false)}>Close</button>
             </div>
         </div>
     )
