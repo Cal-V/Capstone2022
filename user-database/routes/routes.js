@@ -15,13 +15,12 @@ const getIDByUsername = async username => {
         foundUser = await collection.findOne(query)
         //close client
     }catch(err){
-        console.log('DAL.getDeckByData')
+        console.log('DAL.getIdByUsername')
         console.log(err)
-        console.log('/DAL.getDeckByData')
+        console.log('/DAL.getIdByUsername')
     }finally {
         client.close();
     }
-    console.log(foundUser)
     return foundUser?._id;
 }
 
@@ -35,13 +34,12 @@ const getUserByUsername = async username => {
         foundUser = await collection.findOne(query)
         //close client
     }catch(err){
-        console.log('DAL.getDeckByData')
+        console.log('DAL.getUserByUsername')
         console.log(err)
-        console.log('/DAL.getDeckByData')
+        console.log('/DAL.getUserByUsername')
     }finally {
         client.close();
     }
-    console.log(foundUser)
     return foundUser;
 }
 
@@ -55,20 +53,18 @@ const getUserByID = async id => {
         foundUser = await collection.findOne(query)
         //close client
     }catch(err){
-        console.log('DAL.getDeckByData')
+        console.log('DAL.getUserByID')
         console.log(err)
-        console.log('/DAL.getDeckByData')
+        console.log('/DAL.getUserByID')
     }finally {
         client.close();
     }
-    console.log(foundUser)
     return foundUser;
 }
 
 exports.login = async (req, res) => {
     let user = req.body.user;
     const foundUser = await getUserByUsername(user.username)
-    console.log(foundUser?._id)
     if (foundUser == null) {
         return res.json({error: "Account doesn't exist"})
     }
@@ -80,52 +76,140 @@ exports.login = async (req, res) => {
 };
 
 exports.signUp = async (req, res) => {
-    console.log("sign up")
     //post with user data
     let user = req.body.user
+    let userEntry = {
+        username: user.username,
+        password: user.password,
+        decks: []
+    }
     //hash password
     //save new user to database
     const client = await MongoClient.connect(uri)
 
     try {
         const collection = client.db(dbName).collection(collectionName);
-        await collection.insertOne(user)
+        await collection.insertOne(userEntry)
         //close client
     }catch(err){
-        console.log(`${user} signed up`)
+        console.log(`${user.username} signed up`)
         console.log(err)
-        console.log(`/${user} signed up`)
+        console.log(`/${user.username} signed up`)
     }finally {
         client.close();
     }
-    let newUser = await getUserByUsername(user.username)
+    let newUser = await getUserByUsername(userEntry.username)
     return res.json({uuid: newUser._id})
 }
 
-exports.addDeck = async (req, res) => {
-    //post with user uuid and deck data (body.user, body.deck)
-    //create uuid for deck
-    //modify the user data in the database to add the deck
+const addDeck = async (uuid,deckData,id) => {
+    console.log("add")
+    console.log("deckData")
+    let user = await getUserByID(uuid)
+    const client = await MongoClient.connect(uri)
+    const deckId = id || ObjectId()
+    let result;
+    try {
+        const collection = client.db(dbName).collection(collectionName);
+        // this option instructs the method to create a document if no documents match the filter
+        const options = { upsert: true };
+        const updateDoc = {
+            $set: {
+                decks: [...user.decks,{_deck_id: deckId,cards:deckData}]
+            },
+        };
+        result = await collection.updateOne({_id:ObjectId(uuid)}, updateDoc, options);
+        //close client
+    }catch(err){
+        console.log('DAL.createDeck')
+        console.log(err)
+        console.log('/DAL.createDeck')
+    }finally {
+        client.close();
+    }
+    console.log("deck added")
+    return deckId
+}
 
-    //https://www.mongodb.com/docs/drivers/node/current/usage-examples/updateOne/
+exports.createDeck = async (req, res) => {
+    console.log("create deck")
+    let uuid = req.body.uuid
+    let deckData = req.body.deckData
+    const deckId = await addDeck(uuid,deckData)
+    res.json(deckId)
+}
+
+const updateDeck = async (uuid,deckId,deckData) => {
+    console.log(getUserByID(uuid))
+    let id = await deleteDeck(uuid,deckId);
+    let nextid = await addDeck(uuid,deckData,deckId)
+    return nextid;
 }
 
 exports.updateDeck = async (req, res) => {
-    //post with user uuid and deck data (including deck uuid)
-    //update that deck within that user's data in the database
+    console.log("update deck")
+    let uuid = req.body.uuid
+    let deckData = req.body.deckData
+    const deckId = req.body.deckId
+    const id = await updateDeck(uuid,deckId,deckData)
+    res.json(id)
+}
+
+const deleteDeck = async (uuid,deckId) => {
+    let user = await getUserByID(uuid)
+    const keptDecks = Array.from(user.decks).filter(deck => deck._deck_id.toString() != deckId)
+    console.log(deckId)
+    console.log("kept decks")
+    console.log(keptDecks)
+    const client = await MongoClient.connect(uri)
+    let result;
+    try {
+        const collection = client.db(dbName).collection(collectionName);
+        // this option instructs the method to create a document if no documents match the filter
+        const updateDoc = {
+            $set: {
+                decks: keptDecks
+            },
+        };
+        result = await collection.updateOne({_id:ObjectId(uuid)}, updateDoc);
+        //close client
+    }catch(err){
+        console.log('DAL.deleteDeck')
+        console.log(err)
+        console.log('/DAL.deleteDeck')
+    }finally {
+        client.close();
+    }
+    console.log("deck deleted")
+    return deckId
 }
 
 exports.deleteDeck = async (req, res) => {
-    //post with user uuid and deck uuid
-    //delete deck with that uuid
+    console.log("delete deck")
+    let uuid = req.body.uuid
+    let deckId = req.body.deckId
+    deleteDeck(uuid,deckId)
 }
 
 exports.getDeck = async (req, res) => {
-    //post with user uuid and deck uuid
-    //return deck data for that deck (json)
+    const uuid = req.body.uuid;
+    const deckId = req.body.deckId
+    console.log(deckId)
+
+    const user = await getUserByID(uuid);
+    const decks = Array.from(user.decks);
+    console.log(decks)
+    const result = decks.filter(deck => deck._deck_id.toString() == deckId)
+    console.log("result")
+    console.log(result)
+    return res.json(result[0]?.cards)
 }
 
 exports.getAllDecks = async (req, res) => {
-    //post with user uuid
-    //return all decks for that user (json)
+    const uuid = req.body.uuid;
+    console.log(deckId)
+
+    const user = await getUserByID(uuid);
+    const decks = Array.from(user.decks);
+    return res.json(decks)
 } 

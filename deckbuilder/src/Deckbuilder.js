@@ -4,8 +4,9 @@ import DetailedCard from "./Components/DetailedCard/CardDetails/CardDetails.js"
 import {useState, useEffect} from "react"
 import Deck from './Components/Deck/Deck.js';
 import Modal from './Components/Modal.js';
+import axios from "axios";
 
-function Deckbuilder({userMethods,isLoggedIn}) {
+function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user}) {
     const [searchTerm, setSearchTerm] = useState("");
     const [order, setOrder] = useState("name");
     const [direction, setDirection] = useState("auto");
@@ -16,8 +17,6 @@ function Deckbuilder({userMethods,isLoggedIn}) {
     const [deck,setDeck] = useState([])
     const [seeDeck, setSeeDeck] = useState(false)
     const [deckUUID, setDeckUUID] = useState(null)
-
-    const [loginVisible,setLoginVisible] = useState(false)
 
     useEffect(() => {
         getData("https://api.scryfall.com/cards/random")
@@ -83,60 +82,64 @@ function Deckbuilder({userMethods,isLoggedIn}) {
             });
     }
 
-    const loadDeck = uuid => {
-        console.log(uuid)
-        setDeckUUID(uuid)
-        fetch(`http://localhost:4000/deck/read/${uuid}`)
-        .then(res => res.json())
-        .then(data => {
-            setIdentifiers(data.deck)
-        })
+    const loadDeck = async deckId => {
+        setDeckUUID(deckId)
+        const response = await axios.post(
+            "http://localhost:4000/deck/read",
+            {
+                uuid: user.uuid,
+                deckId
+            }
+        );
+        console.log(response.data)
+        setIdentifiers(response.data)
     }
 
-    const createDeck = () => {
-        fetch('http://localhost:4000/deck/create', {
-        method: 'POST',
-        body: JSON.stringify({
-            deckData: identifiers
-        }),
-        headers: {
-            "Content-type": "application/json"
-        }
-        }).then(res => res.json())
-        .then(data => {
-        console.log(data)
-        setDeckUUID(data.uuid)
-        });
+    const createDeck = async () => {
+        console.log("create deck")
+        const response = await axios.post(
+            "http://localhost:4000/deck/create",
+            {
+                uuid: user.uuid,
+                deckData: identifiers
+            }
+        );
+        console.log(response.data)
+        setDeckUUID(response.data)
     }
 
-    const updateDeck = () => {
-        fetch(`http://localhost:4000/deck/update/${deckUUID}`, {
-        method: 'POST',
-        body: JSON.stringify({
-            deckData: identifiers
-        }),
-        headers: {
-            "Content-type": "application/json"
-        }
-        }).then(res => res.json())
-        .then(data => {
-        
-        });
+    const updateDeck = async deckId => {
+        console.log("update deck")
+        const response = await axios.post(
+            "http://localhost:4000/deck/update",
+            {
+                uuid: user.uuid,
+                deckId,
+                deckData: identifiers
+            }
+        );
+        console.log(response.data)
     }
 
-    const deleteDeck = uuid => {
-        fetch(`http://localhost:4000/deck/delete/${uuid}`)
-        .then(res => res.json())
-        .then(data => {
-            setDeckUUID("")
-            setIdentifiers([])
-            setDeck([])
-        })
+    const deleteDeck = async deckId => {
+        console.log("delete deck")
+        setIdentifiers([])
+        setDeck([])
+        setDeckUUID("")
+        const response = await axios.post(
+            "http://localhost:4000/deck/delete",
+            {
+                uuid: user.uuid,
+                deckId
+            }
+        );
     }
 
     useEffect(() => {
         if (identifiers.length > 0) {
-        getDeck()
+            getDeck()
+        } else {
+            setDeck([])
         }
     }, [identifiers])
 
@@ -161,7 +164,7 @@ function Deckbuilder({userMethods,isLoggedIn}) {
 
     const removeCard = (card) => {
         setIdentifiers(identifiers.filter(id => 
-        id.set != card.set || id.collector_number != card.collector_number
+            id.set != card.set || id.collector_number != card.collector_number
         ))
     }
 
@@ -211,7 +214,7 @@ function Deckbuilder({userMethods,isLoggedIn}) {
         </nav>
         <div className='nav-spacer'></div>
         {(seeDeck ?
-            <Deck cards={deck} removeCard={removeCard} createDeck={createDeck} deckUUID={deckUUID} loadDeck={loadDeck} deleteDeck={deleteDeck} updateDeck={updateDeck}/>
+            <Deck cardFunctions={{deck,setDeck}} deckIdFunctions={{deckUUID,setDeckUUID}} deckFunctions={{removeCard,createDeck,loadDeck,deleteDeck,updateDeck,}}/>
         :
             (cards.length != 1 ? 
             <section>

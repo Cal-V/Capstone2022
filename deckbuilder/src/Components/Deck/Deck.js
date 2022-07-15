@@ -3,17 +3,16 @@ import DeckCard from './DeckCard/DeckCard.js'
 import {useState} from "react"
 import "./Deck.css"
 
-function Deck({cards,createDeck,deckUUID,loadDeck,deleteDeck,updateDeck,removeCard}) {
-    const [updatedUUID,setUpdatedUUID] = useState(deckUUID)
+function Deck({cardFunctions,deckIdFunctions,deckFunctions}) {
 
     const loadNewDeck = (evt) => {
         evt.preventDefault();
-        loadDeck(updatedUUID)
+        deckFunctions.loadDeck(deckIdFunctions.deckUUID)
     }
 
     const deleteCurrentDeck = evt => {
         evt.preventDefault();
-        deleteDeck(deckUUID)
+        deckFunctions.deleteDeck(deckIdFunctions.deckUUID)
     }
 
     return (
@@ -21,9 +20,9 @@ function Deck({cards,createDeck,deckUUID,loadDeck,deleteDeck,updateDeck,removeCa
             <div className='deck-holder'>
                 <div className='list-holder'>
                     {
-                        (cards.length > 0 ?
-                        cards.map(c => (
-                            <DeckCard key={c.id} card={c} removeCard={removeCard}/>
+                        (cardFunctions.deck.length > 0 ?
+                        cardFunctions.deck.map(c => (
+                            <DeckCard key={c.id} card={c} removeCard={deckFunctions.removeCard}/>
                         ))
                         : <h3>No cards in your deck</h3>
                         )
@@ -31,13 +30,13 @@ function Deck({cards,createDeck,deckUUID,loadDeck,deleteDeck,updateDeck,removeCa
                 </div>
             </div>
             <div className='deck-data'>
-                <button className='transform-button' onClick={createDeck}>Save deck</button>
-                <button className='transform-button' onClick={updateDeck}>Update deck</button>
+                <button className='transform-button' onClick={deckFunctions.createDeck}>Save deck</button>
+                <button className='transform-button' onClick={() => deckFunctions.updateDeck(deckIdFunctions.deckUUID)}>Update deck</button>
                 <button className='transform-button' onClick={deleteCurrentDeck}>Delete deck</button>
-                <p>Deck ID = <strong>{deckUUID}</strong></p>
+                <p>Deck ID = <strong>{deckIdFunctions.deckUUID}</strong></p>
                 <form onSubmit={loadNewDeck}>
                     <label htmlFor='deck-uuid'>Load Deck</label>
-                    <input id="deck-uuid" type="text" placeholder="UUID" onChange={(e) => setUpdatedUUID(e.target.value)}/>
+                    <input id="deck-uuid" type="text" placeholder="UUID" onChange={(e) => deckIdFunctions.setDeckUUID(e.target.value)}/>
                     <input type="submit" value="Load Deck" />
                 </form>
             </div>

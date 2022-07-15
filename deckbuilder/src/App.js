@@ -11,6 +11,8 @@ function App() {
   const [user, setUser] = useState();
   const [isLoggedIn, setIsLoggedIn] = useState(false)
 
+  const [loginVisible,setLoginVisible] = useState(false)
+
   useEffect(() => {
     const loggedInUser = localStorage.getItem("user");
     if (loggedInUser) {
@@ -29,6 +31,7 @@ function App() {
       {user: user}
     );
     console.log("sign up")
+    setLoginVisible(false)
   }
 
   // logout the user
@@ -50,6 +53,7 @@ function App() {
       {user: user}
     );
     console.log(response.data)
+    setLoginVisible(false)
     
     //checking if there's an error sent by the server
     if (!response.data.error) {
@@ -62,7 +66,7 @@ function App() {
   };
 
   return (
-    <Deckbuilder userMethods={{handleLogout,handleSignUp,handleSubmit,setUsername,username,setPassword,password}} isLoggedIn={isLoggedIn}/>
+    <Deckbuilder loginVisible={loginVisible} setLoginVisible={setLoginVisible} userMethods={{handleLogout,handleSignUp,handleSubmit,setUsername,username,setPassword,password}} isLoggedIn={isLoggedIn} user={user}/>
   )
 }
 
