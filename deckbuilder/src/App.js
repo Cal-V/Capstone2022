@@ -10,6 +10,9 @@ function App() {
   const [password, setPassword] = useState("");
   const [user, setUser] = useState();
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [errorMessage, setErrorMessage] = useState("")
+
+  const [userDecks,setUserDecks] = useState([])
 
   const [loginVisible,setLoginVisible] = useState(false)
 
@@ -20,7 +23,22 @@ function App() {
       setUser(foundUser);
       setIsLoggedIn(true)
     }
+    if (isLoggedIn)
+      setDecks()
   }, []);
+
+  useEffect(() => {
+    if (isLoggedIn)
+      setDecks()
+  }, [isLoggedIn])
+
+  const setDecks = async () => {
+    const response = await axios.post(
+      "http://localhost:4000/deck/all",
+      {uuid: user.uuid}
+    );
+    setUserDecks(response.data)
+  }
 
   const handleSignUp = async e => {
     e.preventDefault();
@@ -30,15 +48,22 @@ function App() {
       "http://localhost:4000/api/signup",
       {user: user}
     );
-    console.log("sign up")
-    setLoginVisible(false)
+    if (!response.data.error) {
+      setLoginVisible(false)
+      setErrorMessage("")
+    } else {
+      setErrorMessage(response.data.error)
+    }
+  }
+
+  const resetUserText = () => {
+    setUsername("");
+    setPassword("");
   }
 
   // logout the user
   const handleLogout = () => {
     setUser();
-    setUsername("");
-    setPassword("");
     setIsLoggedIn(false)
     localStorage.clear();
   };
@@ -52,21 +77,22 @@ function App() {
       "http://localhost:4000/api/login",
       {user: user}
     );
-    console.log(response.data)
-    setLoginVisible(false)
-    
     //checking if there's an error sent by the server
     if (!response.data.error) {
+      setLoginVisible(false)
       // set the state of the user
       setUser(response.data);
       setIsLoggedIn(true)
       // store the user in localStorage
       localStorage.setItem("user", JSON.stringify(response.data));
+      setErrorMessage("")
+    } else {
+      setErrorMessage(response.data.error)
     }
   };
 
   return (
-    <Deckbuilder loginVisible={loginVisible} setLoginVisible={setLoginVisible} userMethods={{handleLogout,handleSignUp,handleSubmit,setUsername,username,setPassword,password}} isLoggedIn={isLoggedIn} user={user}/>
+    <Deckbuilder userDecks={userDecks} errorMessage={{errorMessage,setErrorMessage}} loginVisible={loginVisible} setLoginVisible={setLoginVisible} userMethods={{handleLogout,handleSignUp,handleSubmit,setUsername,username,setPassword,password,resetUserText}} isLoggedIn={isLoggedIn} user={user}/>
   )
 }
 

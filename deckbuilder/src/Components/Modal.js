@@ -1,7 +1,7 @@
 import React from 'react'
 import "./modal.css"
 
-function Modal({userMethods,setLoginVisible}) {
+function Modal({userMethods,setLoginVisible,errorMessage}) {
     return (
         <div className='modal'>
             <div className='modal-main'>
@@ -10,11 +10,12 @@ function Modal({userMethods,setLoginVisible}) {
                     <input className='modal-text-box' type="text" value={userMethods.username} placeholder="Username" onChange={({ target }) => userMethods.setUsername(target.value)}/>
                     <label htmlFor="password">Password: </label>
                     <input className='modal-text-box' type="password" value={userMethods.password} placeholder="Password" onChange={({ target }) => userMethods.setPassword(target.value)}/>
+                    {errorMessage ? <p className='error-text'>{errorMessage.errorMessage}</p> : <></>}
                     <br />
                     <button  className='login-form-button'type="submit">Login</button>
                     <button className='login-form-button'  onClick={userMethods.handleSignUp}>Sign Up</button>
                 </form>
-                <button className='login-form-button' id='modal-close-button' onClick={() => setLoginVisible(false)}>Close</button>
+                <button className='login-form-button' id='modal-close-button' onClick={() => {setLoginVisible(false);userMethods.resetUserText();errorMessage.setErrorMessage("")}}>Close</button>
             </div>
         </div>
     )

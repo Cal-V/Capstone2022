@@ -3,7 +3,7 @@ import DeckCard from './DeckCard/DeckCard.js'
 import {useState} from "react"
 import "./Deck.css"
 
-function Deck({cardFunctions,deckIdFunctions,deckFunctions}) {
+function Deck({cardFunctions,deckIdFunctions,deckFunctions,userDecks}) {
 
     const loadNewDeck = (evt) => {
         evt.preventDefault();
@@ -17,6 +17,7 @@ function Deck({cardFunctions,deckIdFunctions,deckFunctions}) {
 
     return (
         <>
+            <h2>Unnamed Deck</h2>
             <div className='deck-holder'>
                 <div className='list-holder'>
                     {
@@ -36,8 +37,12 @@ function Deck({cardFunctions,deckIdFunctions,deckFunctions}) {
                 <p>Deck ID = <strong>{deckIdFunctions.deckUUID}</strong></p>
                 <form onSubmit={loadNewDeck}>
                     <label htmlFor='deck-uuid'>Load Deck</label>
-                    <input id="deck-uuid" type="text" placeholder="UUID" onChange={(e) => deckIdFunctions.setDeckUUID(e.target.value)}/>
-                    <input type="submit" value="Load Deck" />
+                    <select className='deck-select' onChange={(e) => deckIdFunctions.setDeckUUID(e.target.value)} value={deckFunctions.deckUUID}>
+                        {userDecks.map((deck) => (
+                            <option>{deck._deck_id}</option>
+                        ))}
+                    </select>
+                    <input type="submit" className='transform-button' value="Load Deck" />
                 </form>
             </div>
         </>

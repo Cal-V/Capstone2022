@@ -22,6 +22,13 @@ const CardList = ({cards,getDetailedCard,addToDeck}) => {
             setShownIndexes([shownIndexes[0]-numPerPage,shownIndexes[0]])
         }
     }
+
+    const addAllToDeck = () => {
+        cards.forEach(card => {
+            addToDeck(card.set,card.collector_number)
+            console.log(card.name)
+        });
+    }
     
     return (
         <>
@@ -39,6 +46,7 @@ const CardList = ({cards,getDetailedCard,addToDeck}) => {
                 <></>
                 )}
             </div>
+            <button className='transform-button' onClick={addAllToDeck}>Add All to Deck</button>
             <div className="list-holder">
                 {
                     (cards.length > 0 ?

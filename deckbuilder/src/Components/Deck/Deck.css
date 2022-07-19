@@ -5,4 +5,29 @@
 
 .deck-data {
     display: inline-block;
+    margin-top: 5%;
+}
+
+.deck-select {
+    background-color: rgba(255, 235, 204, .5);
+    border: 2px #6A5480 solid;
+    color: #6A5480;
+    padding: .5em;
+    text-align: center;
+    text-decoration: none;
+    margin: 0 .75em;
+    display: inline-block;
+}
+
+.deck-select > option {
+    color: #FFEBCC;
+    background-color: #110D14;
+}
+
+.deck-select > option:hover {
+    background-color: yellow;
+}
+
+.deck-select:focus {
+    outline: none;
 }

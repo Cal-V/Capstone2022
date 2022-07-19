@@ -207,9 +207,8 @@ exports.getDeck = async (req, res) => {
 
 exports.getAllDecks = async (req, res) => {
     const uuid = req.body.uuid;
-    console.log(deckId)
-
     const user = await getUserByID(uuid);
+    console.log(user)
     const decks = Array.from(user.decks);
     return res.json(decks)
 } 

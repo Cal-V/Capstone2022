@@ -19,7 +19,7 @@
 }
 
 .alt-art-box {
-    background-color: rgba(136, 179, 150,.5);
+    background-color: rgba(133, 199, 157,.5);
     border-bottom: #6A5480 1px solid;
     padding: .5em;
 }
@@ -38,24 +38,31 @@
     margin-bottom: 15px;
 }
 
+/*
+red     #e68b8a
+orange  #e6bd81
+yellow  #eff291
+green   #85c79d
+*/
+
 .legal {
-    background-color: rgba(133, 199, 157,1);
+    background-color: #85c79d;
 }
 
 .banned {
-    background-color: rgba(230,139,138,1);
+    background-color: #e68b8a;
 }
 
 .not_legal {
-    background-color: rgba(230,189,129,1);
+    background-color: #e6bd81;
 }
 
 .restricted {
-    background-color: rgba(239,242,145,1);
+    background-color: #eff291;
 }
 
 .selectable:hover {
-    background-color: #88B396;
+    background-color: #85c79d;
     cursor: pointer;
 }
 

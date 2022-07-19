@@ -119,3 +119,14 @@ option:hover {
   color: #110D14;
   cursor: pointer;
 }
+
+.error-text {
+  color: rgb(230,139,138);
+}
+
+/*
+red     #e68b8a
+orange  #e6bd81
+yellow  #eff291
+green   #85c79d
+*/

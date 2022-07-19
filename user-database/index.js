@@ -20,6 +20,7 @@ app.post("/deck/create", routes.createDeck)
 app.post("/deck/read", routes.getDeck)
 app.post("/deck/delete", routes.deleteDeck)
 app.post("/deck/update", routes.updateDeck)
+app.post("/deck/all", routes.getAllDecks)
 
 app.post("/api/login",  routes.login)
 

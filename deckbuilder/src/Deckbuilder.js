@@ -6,7 +6,7 @@ import Deck from './Components/Deck/Deck.js';
 import Modal from './Components/Modal.js';
 import axios from "axios";
 
-function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user}) {
+function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user,errorMessage,userDecks}) {
     const [searchTerm, setSearchTerm] = useState("");
     const [order, setOrder] = useState("name");
     const [direction, setDirection] = useState("auto");
@@ -69,17 +69,15 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user})
 
     const getDeck = () => {
         fetch('https://api.scryfall.com/cards/collection', {
-                method: 'POST',
-                body: JSON.stringify({
-            identifiers
-        }),
-                headers: {
-                    "Content-type": "application/json"
-                }
+            method: 'POST',
+            body: JSON.stringify({identifiers}),
+            headers: {
+                "Content-type": "application/json"
+            }
             }).then(res => res.json())
         .then(data => {
         setDeck(data.data)
-            });
+        });
     }
 
     const loadDeck = async deckId => {
@@ -91,12 +89,12 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user})
                 deckId
             }
         );
+        console.log("Load deck")
         console.log(response.data)
         setIdentifiers(response.data)
     }
 
     const createDeck = async () => {
-        console.log("create deck")
         const response = await axios.post(
             "http://localhost:4000/deck/create",
             {
@@ -104,12 +102,10 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user})
                 deckData: identifiers
             }
         );
-        console.log(response.data)
         setDeckUUID(response.data)
     }
 
     const updateDeck = async deckId => {
-        console.log("update deck")
         const response = await axios.post(
             "http://localhost:4000/deck/update",
             {
@@ -118,11 +114,9 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user})
                 deckData: identifiers
             }
         );
-        console.log(response.data)
     }
 
     const deleteDeck = async deckId => {
-        console.log("delete deck")
         setIdentifiers([])
         setDeck([])
         setDeckUUID("")
@@ -141,7 +135,14 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user})
         } else {
             setDeck([])
         }
+        console.log("Identifiers")
+        console.log(identifiers)
     }, [identifiers])
+
+    useEffect(() => {
+        if(deckUUID)
+            loadDeck(deckUUID)
+    },[deckUUID])
 
     useEffect(() => {
         if (searchTerm.length > 0)
@@ -214,7 +215,7 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user})
         </nav>
         <div className='nav-spacer'></div>
         {(seeDeck ?
-            <Deck cardFunctions={{deck,setDeck}} deckIdFunctions={{deckUUID,setDeckUUID}} deckFunctions={{removeCard,createDeck,loadDeck,deleteDeck,updateDeck,}}/>
+            <Deck userDecks={userDecks} cardFunctions={{deck,setDeck}} deckIdFunctions={{deckUUID,setDeckUUID}} deckFunctions={{removeCard,createDeck,loadDeck,deleteDeck,updateDeck,}}/>
         :
             (cards.length != 1 ? 
             <section>
@@ -227,7 +228,7 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user})
             )
         )}
         {loginVisible ?
-        <Modal userMethods={userMethods} setLoginVisible={setLoginVisible}/>
+        <Modal errorMessage={errorMessage} userMethods={userMethods} setLoginVisible={setLoginVisible}/>
         :
         <></>}
         </div>
