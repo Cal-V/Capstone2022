@@ -4,26 +4,6 @@ const uri = "mongodb+srv://rshipman:hmAPz2kSsUgbmph@cluster0.mlus2.mongodb.net/?
 const dbName = "deckbuilder"
 const collectionName = "users"
 
-const getIDByUsername = async username => {
-
-    let foundUser;
-
-    const client = await MongoClient.connect(uri)
-    try {
-        const collection = client.db(dbName).collection(collectionName);
-        const query = {username}
-        foundUser = await collection.findOne(query)
-        //close client
-    }catch(err){
-        console.log('DAL.getIdByUsername')
-        console.log(err)
-        console.log('/DAL.getIdByUsername')
-    }finally {
-        client.close();
-    }
-    return foundUser?._id;
-}
-
 const getUserByUsername = async username => {
     let foundUser;
 

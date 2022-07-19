@@ -101,6 +101,24 @@ option:hover {
   grid-template-columns: repeat(auto-fit, minmax(200px,1fr));
 }
 
+.transform-button {
+  background-color: rgba(255, 235, 204, .5);
+  border: 2px #6A5480 solid;
+  color: #6A5480;
+  padding: .5em;
+  text-align: center;
+  text-decoration: none;
+  margin: 0 .75em;
+  display: inline-block;
+}
+
+
+
+.transform-button:hover {
+  cursor: pointer;
+  background-color: #FFEBCC;
+}
+
 .small-transform-button {
   border: none;
   background-color: rgba(250, 245, 255, .5);

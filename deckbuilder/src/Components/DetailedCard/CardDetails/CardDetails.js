@@ -21,10 +21,10 @@ function CardDetails({card, addToDeck, alternateArts,getDetailedCard}) {
         <div className='details-container'>
             {/* List of all the printings of the card and their respective usd prices */}
             <div className='alt-arts half-size'>
-                { alternateArts.map((card) => (
-                    <div onClick={() => loadNewArt(card)} key={card.id} className="alt-art-box selectable">
-                        <p className='inline'><b>{card.set}</b> ({card.collector_number})</p>
-                        <p className='right-align inline-text-right'>{card.prices.usd ? <b><a href={card.purchase_uris.tcgplayer} target="_blank">{` $${card.prices.usd}`}</a></b> : ""}</p>
+                { alternateArts.map((printing) => (
+                    <div onClick={() => loadNewArt(printing)} key={printing.id} className={`alt-art-box selectable${card.id == printing.id ? " current-selected" : ""}`}>
+                        <p className='inline'><b>{printing.set}</b> ({printing.collector_number})</p>
+                        <p className='right-align inline-text-right'>{printing.prices.usd ? <b><a href={printing.purchase_uris.tcgplayer} target="_blank">{` $${printing.prices.usd}`}</a></b> : ""}</p>
                     </div>
                 ))}
             </div>

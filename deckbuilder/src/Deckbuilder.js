@@ -14,7 +14,9 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user,e
     const [alternateArts, setAlternateArts] = useState([])
 
     const [identifiers, setIdentifiers] = useState([])
+    const [slicedIds, setSlicedIds] = useState([])
     const [deck,setDeck] = useState([])
+    const [cardNumbers,setCardNumbers] = useState({})
     const [seeDeck, setSeeDeck] = useState(false)
     const [deckUUID, setDeckUUID] = useState(null)
 
@@ -68,16 +70,18 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user,e
     } 
 
     const getDeck = () => {
-        fetch('https://api.scryfall.com/cards/collection', {
+        slicedIds.map(ids => (
+            fetch('https://api.scryfall.com/cards/collection', {
             method: 'POST',
-            body: JSON.stringify({identifiers}),
+            body: JSON.stringify({identifiers:ids}),
             headers: {
                 "Content-type": "application/json"
             }
             }).then(res => res.json())
-        .then(data => {
-        setDeck(data.data)
-        });
+            .then(data => {
+                setDeck([...deck,...data.data])
+            })
+        ))
     }
 
     const loadDeck = async deckId => {
@@ -89,8 +93,6 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user,e
                 deckId
             }
         );
-        console.log("Load deck")
-        console.log(response.data)
         setIdentifiers(response.data)
     }
 
@@ -130,14 +132,41 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user,e
     }
 
     useEffect(() => {
-        if (identifiers.length > 0) {
-            getDeck()
+        if (deck.length > 0) {
+            let nums = {}
+            deck.forEach(card => {
+                if (cardNumbers[card.id])
+                    nums[card.id] = cardNumbers[card.id]
+                else
+                    nums[card.id] = 1
+            })
+            setCardNumbers(nums)
         } else {
+            getDeck()
+        }
+    },[deck])
+
+    useEffect(() => {
+        console.log(identifiers)
+        let idArrays = []
+        for (let i = 0; i < identifiers.length; i += 75) {
+            if (i+75 <= identifiers.length)
+                idArrays.push(identifiers.slice(i,i+75))
+            else
+                idArrays.push(identifiers.slice(i))
+        }
+        setSlicedIds(idArrays)
+    }, [identifiers])
+
+    useEffect(() => {
+        console.log(identifiers,slicedIds)
+        if(identifiers.length > 0) {
             setDeck([])
         }
-        console.log("Identifiers")
-        console.log(identifiers)
-    }, [identifiers])
+        else
+            setDeck([])
+    },[slicedIds])
+
 
     useEffect(() => {
         if(deckUUID)
@@ -151,8 +180,8 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user,e
 
     const addIdentifier = (set,collector_number) => {
         let newID = {
-        set,
-        collector_number
+            set,
+            collector_number
         }
         if (identifiers.length == 0)
         setIdentifiers([newID])
@@ -215,15 +244,15 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user,e
         </nav>
         <div className='nav-spacer'></div>
         {(seeDeck ?
-            <Deck userDecks={userDecks} cardFunctions={{deck,setDeck}} deckIdFunctions={{deckUUID,setDeckUUID}} deckFunctions={{removeCard,createDeck,loadDeck,deleteDeck,updateDeck,}}/>
+            <Deck userDecks={userDecks} deck={deck} identifiers={{setIdentifiers,identifiers}} deckIdFunctions={{deckUUID,setDeckUUID}} deckFunctions={{removeCard,createDeck,loadDeck,deleteDeck,updateDeck,}} cardNumbers={cardNumbers} setCardNumbers={setCardNumbers}/>
         :
             (cards.length != 1 ? 
             <section>
-                <CardList cards={cards} getDetailedCard={getDetailedCard} addToDeck={addIdentifier}/>
+                <CardList cards={cards} getDetailedCard={getDetailedCard} addToDeck={addIdentifier} cardNumbers={cardNumbers} setCardNumbers={setCardNumbers}/>
             </section>
             :
             <section>
-                <DetailedCard key={cards[0].id} card={cards[0]} addToDeck={addIdentifier} getDetailedCard={getDetailedCard} alternateArts={alternateArts}/>
+                <DetailedCard key={cards[0].id} card={cards[0]} addToDeck={addIdentifier} setCardNumbers={setCardNumbers} cardNumbers={cardNumbers} getDetailedCard={getDetailedCard} alternateArts={alternateArts}/>
             </section>
             )
         )}

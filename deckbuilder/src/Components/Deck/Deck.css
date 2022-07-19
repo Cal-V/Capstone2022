@@ -31,3 +31,27 @@
 .deck-select:focus {
     outline: none;
 }
+
+.hidden {
+    display: none;
+}
+
+.deck-card-functions {
+    margin: auto;
+    text-align: center;
+}
+
+.deck-card-functions > button {
+    margin: .5em;
+}
+
+.file-holder > button {
+    background-color: rgba(255, 235, 204, .5);
+    border: 2px #6A5480 solid;
+    color: #6A5480;
+    padding: .5em;
+    text-align: center;
+    text-decoration: none;
+    margin: 0 .75em;
+    display: inline-block;
+}

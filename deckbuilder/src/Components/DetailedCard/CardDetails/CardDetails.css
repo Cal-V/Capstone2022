@@ -24,6 +24,10 @@
     padding: .5em;
 }
 
+.current-selected {
+    background-color: rgba(133, 199, 157,1);
+}
+
 .alt-art-box > p {
     margin: 0px;
 }
@@ -102,24 +106,6 @@ green   #85c79d
 
 #detailed-card-img {
     width: 100%;
-}
-
-.transform-button {
-    background-color: rgba(255, 235, 204, .5);
-    border: 2px #6A5480 solid;
-    color: #6A5480;
-    padding: .5em;
-    text-align: center;
-    text-decoration: none;
-    margin: 0 .75em;
-    display: inline-block;
-}
-
-
-
-.transform-button:hover {
-    cursor: pointer;
-    background-color: #FFEBCC;
 }
 
 .num-line {
