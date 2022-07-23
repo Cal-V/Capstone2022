@@ -8,7 +8,7 @@ export const Card = ({card,getDetailedCard,addToDeck}) => {
 
     const handleRightClick = (evt) => {
         evt.preventDefault();
-        addToDeck(card.set,card.collector_number)
+        addToDeck(card.id)
     }
     
     return (

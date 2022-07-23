@@ -1,0 +1,13 @@
+.num-copies {
+    margin: 0em 1em;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+}
+
+.arrows {
+    padding: 0px;
+    margin: 0px;
+    font-size: 1.75em;
+    font-weight: 500;
+    color: #536659;
+}

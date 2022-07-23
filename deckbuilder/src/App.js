@@ -92,7 +92,7 @@ function App() {
   };
 
   return (
-    <Deckbuilder userDecks={userDecks} errorMessage={{errorMessage,setErrorMessage}} loginVisible={loginVisible} setLoginVisible={setLoginVisible} userMethods={{handleLogout,handleSignUp,handleSubmit,setUsername,username,setPassword,password,resetUserText}} isLoggedIn={isLoggedIn} user={user}/>
+    <Deckbuilder setUserDecks={setDecks} userDecks={userDecks} errorMessage={{errorMessage,setErrorMessage}} loginVisible={loginVisible} setLoginVisible={setLoginVisible} userMethods={{handleLogout,handleSignUp,handleSubmit,setUsername,username,setPassword,password,resetUserText}} isLoggedIn={isLoggedIn} user={user}/>
   )
 }
 

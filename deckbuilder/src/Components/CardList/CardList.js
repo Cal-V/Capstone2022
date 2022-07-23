@@ -2,7 +2,7 @@ import React from 'react'
 import Card from "./Card/Card.js"
 import { useState, useEffect } from 'react'
 
-const CardList = ({cards,getDetailedCard,addToDeck}) => {
+const CardList = ({cards,getDetailedCard,addToDeck,addMultipleIds}) => {
     const [numPerPage, setNumPerPage] = useState(50)
     const [shownIndexes, setShownIndexes] = useState([0,numPerPage]) //incl,excl
 
@@ -24,10 +24,11 @@ const CardList = ({cards,getDetailedCard,addToDeck}) => {
     }
 
     const addAllToDeck = () => {
+        let ids = []
         cards.forEach(card => {
-            addToDeck(card.set,card.collector_number)
-            console.log(card.name)
+            ids.push({id:card.id})
         });
+        addMultipleIds(ids)
     }
     
     return (

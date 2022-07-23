@@ -6,17 +6,14 @@ import Deck from './Components/Deck/Deck.js';
 import Modal from './Components/Modal.js';
 import axios from "axios";
 
-function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user,errorMessage,userDecks}) {
+function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user,errorMessage,userDecks,setUserDecks}) {
     const [searchTerm, setSearchTerm] = useState("");
     const [order, setOrder] = useState("name");
     const [direction, setDirection] = useState("auto");
     const [cards, setCards] = useState([]);
     const [alternateArts, setAlternateArts] = useState([])
 
-    const [identifiers, setIdentifiers] = useState([])
-    const [slicedIds, setSlicedIds] = useState([])
     const [deck,setDeck] = useState([])
-    const [cardNumbers,setCardNumbers] = useState({})
     const [seeDeck, setSeeDeck] = useState(false)
     const [deckUUID, setDeckUUID] = useState(null)
 
@@ -38,12 +35,12 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user,e
             }
             else {
             setCards(data.data || []);
-            if (data.data.length == 1) {
+            if (data.data?.length == 1) {
                 let artUrl = data.data[0].prints_search_uri;
                 artUrl = `${artUrl.substring(0,artUrl.indexOf("&unique=prints"))} lang:${data.data[0].lang}&unique=prints`
                 getArts(artUrl)
             }
-            if (data.has_more)
+            if (data?.has_more)
                 getMore(data.next_page,setCards,cards)
             }
         })
@@ -67,21 +64,28 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user,e
             if (data.has_more)
                 getMore(data.next_page,setAlternateArts,alternateArts)
         })
-    } 
+    }
 
-    const getDeck = () => {
-        slicedIds.map(ids => (
-            fetch('https://api.scryfall.com/cards/collection', {
-            method: 'POST',
-            body: JSON.stringify({identifiers:ids}),
-            headers: {
-                "Content-type": "application/json"
+    const getDeckCards = async (identifiers) => {
+        if (identifiers.length < 75) {
+            let response = await axios.post(
+                "https://api.scryfall.com/cards/collection",
+                {identifiers}
+            )
+            setDeck(response.data.data)
+        } else {
+            let cards = []
+            for (let i = 0; i < identifiers.length; i += 75) {
+                let ids = i + 75 < identifiers.length ? identifiers.slice(i,i+75) : identifiers.slice(i)
+                let response = await axios.post(
+                    "https://api.scryfall.com/cards/collection",
+                    {identifiers:ids}
+                )
+                cards = [...cards,...response.data.data]
             }
-            }).then(res => res.json())
-            .then(data => {
-                setDeck([...deck,...data.data])
-            })
-        ))
+            setDeck(cards)
+        }
+        //console.log("Cards not Found",response.data.not_found)
     }
 
     const loadDeck = async deckId => {
@@ -93,35 +97,52 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user,e
                 deckId
             }
         );
-        setIdentifiers(response.data)
+        getDeckCards(response.data)
     }
 
     const createDeck = async () => {
+        let deckData = []
+        deck.forEach(card => {
+            deckData.push({
+                id: card.id,
+                num_copies: card.num_copies
+            })
+        })
+        console.log(deckData)
         const response = await axios.post(
             "http://localhost:4000/deck/create",
             {
                 uuid: user.uuid,
-                deckData: identifiers
+                deckData:deckData
             }
         );
         setDeckUUID(response.data)
+        setUserDecks()
     }
 
     const updateDeck = async deckId => {
+        let deckData = []
+        deck.forEach(card => {
+            deckData.push({
+                id: card.id,
+                num_copies: card.num_copies
+            })
+        })
         const response = await axios.post(
             "http://localhost:4000/deck/update",
             {
                 uuid: user.uuid,
                 deckId,
-                deckData: identifiers
+                deckData
             }
         );
+        setDeckUUID(response.data)
+        setUserDecks()
     }
 
     const deleteDeck = async deckId => {
-        setIdentifiers([])
         setDeck([])
-        setDeckUUID("")
+        setDeckUUID(null)
         const response = await axios.post(
             "http://localhost:4000/deck/delete",
             {
@@ -129,44 +150,21 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user,e
                 deckId
             }
         );
+        setUserDecks()
+    }
+
+    const checkNumCards = () => {
+        let deckCards = deck.map((card) => (
+            card?.num_copies ? card = card : card = {...card,num_copies:1}
+        ))
+        setDeck(deckCards)
     }
 
     useEffect(() => {
-        if (deck.length > 0) {
-            let nums = {}
-            deck.forEach(card => {
-                if (cardNumbers[card.id])
-                    nums[card.id] = cardNumbers[card.id]
-                else
-                    nums[card.id] = 1
-            })
-            setCardNumbers(nums)
-        } else {
-            getDeck()
-        }
+        console.log("Deck",deck)
+        if (deck.length > 0 && deck.some((card) => !card?.num_copies))
+            checkNumCards()
     },[deck])
-
-    useEffect(() => {
-        console.log(identifiers)
-        let idArrays = []
-        for (let i = 0; i < identifiers.length; i += 75) {
-            if (i+75 <= identifiers.length)
-                idArrays.push(identifiers.slice(i,i+75))
-            else
-                idArrays.push(identifiers.slice(i))
-        }
-        setSlicedIds(idArrays)
-    }, [identifiers])
-
-    useEffect(() => {
-        console.log(identifiers,slicedIds)
-        if(identifiers.length > 0) {
-            setDeck([])
-        }
-        else
-            setDeck([])
-    },[slicedIds])
-
 
     useEffect(() => {
         if(deckUUID)
@@ -178,23 +176,76 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user,e
         getData(`https://api.scryfall.com/cards/search?order=${order}&q=${searchTerm.replace('(',"%28").replace(')',"%29").replace(' ',"%20").replace(':',"%3A").replace('=',"%3D")}&dir=${direction}`)
     }, [order,direction])
 
-    const addIdentifier = (set,collector_number) => {
-        let newID = {
-            set,
-            collector_number
-        }
-        if (identifiers.length == 0)
-        setIdentifiers([newID])
-        else {
-        let hasCopy = identifiers.some(id => id.set == newID.set && id.collector_number == newID.collector_number)
-        if (!hasCopy)
-            setIdentifiers(identifiers => [...identifiers,newID])
+    const addCardToDeck = async (id,num) => {
+        let num_copies = num || 1
+        if (!deck.some(card => card.id == id && card.num_copies)) {
+            let response = await axios.post(
+                "https://api.scryfall.com/cards/collection",
+                {identifiers: [
+                    {id}
+                ]}
+            )
+            let newCard = {
+                ...response.data.data[0],
+                num_copies
+            }
+            setDeck([...deck,newCard])
         }
     }
 
+    const changeNumCopies = (id,num_copies) => {
+        let deckCards = []
+        deck.forEach(card => {
+            card.id == id ? deckCards.push({...card,num_copies}) : deckCards.push(card)
+        })
+        console.log("Copies changed",deckCards)
+        setDeck(deckCards)
+    }
+
+    const addMultipleToDeck = async (identifiers) => {
+        
+        if (identifiers.length + deck.length < 75) {
+            let response = await axios.post(
+                "https://api.scryfall.com/cards/collection",
+                {identifiers}
+            )
+            setDeck(response.data.data)
+        } else {
+            let cards = []
+            for (let i = 0; i < identifiers.length; i += 75) {
+                let ids = i + 75 < identifiers.length ? identifiers.slice(i,i+75) : identifiers.slice(i)
+                console.log(ids)
+                let response = await axios.post(
+                    "https://api.scryfall.com/cards/collection",
+                    {identifiers:ids}
+                )
+                cards = [...cards,...response.data.data]
+            }
+            cards = cards.map(card => (
+                card = {...card,num_copies:1}
+            ))
+            setDeck([...deck,...cards])
+        }
+    }
+
+    // const addIdentifier = (id,num) => {
+    //     let num_copies = num ? num : 1
+    //     console.log("Add id info",id,num)
+    //     let newID = {
+    //         id:id, 
+    //     }
+    //     if (identifiers.length == 0)
+    //         setIdentifiers([newID])
+    //     else {
+    //         let hasCopy = identifiers.filter(id => id.id == newID.id)
+    //         if (!hasCopy) 
+    //             setIdentifiers(identifiers => [...identifiers,newID])
+    //     }
+    // }
+
     const removeCard = (card) => {
-        setIdentifiers(identifiers.filter(id => 
-            id.set != card.set || id.collector_number != card.collector_number
+        setDeck(deck.filter(deckCard => 
+            deckCard.id != card.id
         ))
     }
 
@@ -206,6 +257,7 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user,e
     }
 
     const getDetailedCard = (id) => {
+        setSeeDeck(false)
         let url = `https://api.scryfall.com/cards/${id}`
         getData(url)
     }
@@ -244,15 +296,15 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user,e
         </nav>
         <div className='nav-spacer'></div>
         {(seeDeck ?
-            <Deck userDecks={userDecks} deck={deck} identifiers={{setIdentifiers,identifiers}} deckIdFunctions={{deckUUID,setDeckUUID}} deckFunctions={{removeCard,createDeck,loadDeck,deleteDeck,updateDeck,}} cardNumbers={cardNumbers} setCardNumbers={setCardNumbers}/>
+            <Deck getDetailedCard={getDetailedCard} changeNum={changeNumCopies} userDecks={userDecks} deck={deck} setDeck={setDeck} deckIdFunctions={{deckUUID,setDeckUUID}} deckFunctions={{removeCard,createDeck,loadDeck,deleteDeck,updateDeck,}}/>
         :
             (cards.length != 1 ? 
             <section>
-                <CardList cards={cards} getDetailedCard={getDetailedCard} addToDeck={addIdentifier} cardNumbers={cardNumbers} setCardNumbers={setCardNumbers}/>
+                <CardList cards={cards} addMultipleIds={addMultipleToDeck} getDetailedCard={getDetailedCard} addToDeck={addCardToDeck}/>
             </section>
             :
             <section>
-                <DetailedCard key={cards[0].id} card={cards[0]} addToDeck={addIdentifier} setCardNumbers={setCardNumbers} cardNumbers={cardNumbers} getDetailedCard={getDetailedCard} alternateArts={alternateArts}/>
+                <DetailedCard key={cards[0].id} card={cards[0]} addToDeck={addCardToDeck} getDetailedCard={getDetailedCard} alternateArts={alternateArts}/>
             </section>
             )
         )}

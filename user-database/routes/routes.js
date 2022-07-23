@@ -85,6 +85,7 @@ exports.signUp = async (req, res) => {
 const addDeck = async (uuid,deckData,id) => {
     console.log("add")
     console.log("deckData")
+    console.log(deckData)
     let user = await getUserByID(uuid)
     const client = await MongoClient.connect(uri)
     const deckId = id || ObjectId()
@@ -174,14 +175,13 @@ exports.deleteDeck = async (req, res) => {
 exports.getDeck = async (req, res) => {
     const uuid = req.body.uuid;
     const deckId = req.body.deckId
+    console.log("load deck")
     console.log(deckId)
 
     const user = await getUserByID(uuid);
     const decks = Array.from(user.decks);
-    console.log(decks)
     const result = decks.filter(deck => deck._deck_id.toString() == deckId)
-    console.log("result")
-    console.log(result)
+    console.log(result[0]?.cards)
     return res.json(result[0]?.cards)
 }
 

@@ -142,6 +142,10 @@ option:hover {
   color: rgb(230,139,138);
 }
 
+.centered-text {
+  text-align: center;
+}
+
 /*
 red     #e68b8a
 orange  #e6bd81

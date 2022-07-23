@@ -39,14 +39,14 @@ function CardDetails({card, addToDeck, alternateArts,getDetailedCard}) {
                         <img id='detailed-card-img' className='card-style' src={card_faces[transformIndex].image_uris.png} />
                         <div>
                             <button className="transform-button" onClick={() => {setTransformIndex((transformIndex+1)%2)}}>Flip</button>
-                            <button className='transform-button' onClick={() => addToDeck(card.set,card.collector_number)}>Add to deck</button>
+                            <button className='transform-button' onClick={() => addToDeck(card.id)}>Add to deck</button>
                         </div>
                     </>
                     :
                     <>
                         <img id='detailed-card-img' className='card-style' src={card.image_uris.png} />
                         <div>
-                            <button className='transform-button' onClick={() => addToDeck(card.set,card.collector_number)}>Add to deck</button>
+                            <button className='transform-button' onClick={() => addToDeck(card.id)}>Add to deck</button>
                         </div>
                     </>}
                 </div>
