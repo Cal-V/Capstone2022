@@ -1,20 +1,41 @@
 .deck-holder {
-    width: 70%;
-    display: inline-block;
+    display: flex;
 }
 
 .deck-data {
-    display: inline-block;
-    margin-top: 5%;
+    background-color: #6A5480;
+    color: #FFEBCC;
+    padding: 20px;
+}
+
+.second-row-holder {
+    display: flex;
+}
+
+.deck-data-item {
+    flex: 1;
+    margin: 0px 10px;
+}
+
+.deck-text-holder {
+    padding: 30px;
+    flex: 1.5;
+}
+
+textarea {
+    width: 100%;
+}
+
+.deck-holder {
+    flex: 4;
+}
+
+.deck-list-holder {
+    width: 95%;
+    margin-right: 3%;
 }
 
 .deck-select {
-    background-color: rgba(255, 235, 204, .5);
-    border: 2px #6A5480 solid;
-    color: #6A5480;
-    padding: .5em;
-    text-align: center;
-    text-decoration: none;
     margin: 0 .75em;
     display: inline-block;
 }
@@ -22,10 +43,6 @@
 .deck-select > option {
     color: #FFEBCC;
     background-color: #110D14;
-}
-
-.deck-select > option:hover {
-    background-color: yellow;
 }
 
 .deck-select:focus {
@@ -45,13 +62,32 @@
     margin: .5em;
 }
 
-.file-holder > button {
-    background-color: rgba(255, 235, 204, .5);
-    border: 2px #6A5480 solid;
-    color: #6A5480;
+.deck-link {
+    cursor: default;
+    color: #FFEBCC;
+}
+
+.deck-link:hover {
+    cursor: pointer;
+    color: #88B396;
+}
+
+.deck-button {
+    background-color: #536659;
+    border: 2px #FFEBCC solid;
+    color: #FFEBCC;
     padding: .5em;
     text-align: center;
     text-decoration: none;
     margin: 0 .75em;
     display: inline-block;
+}
+
+.deck-button:hover {
+    background-color: #88B396;
+    cursor: pointer;
+}
+
+#deck-name-label {
+    margin-right: 105px;
 }

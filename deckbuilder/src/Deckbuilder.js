@@ -16,6 +16,8 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user,e
     const [deck,setDeck] = useState([])
     const [seeDeck, setSeeDeck] = useState(false)
     const [deckUUID, setDeckUUID] = useState(null)
+    const [deckInfo, setDeckInfo] = useState({name: "Unnamed Deck"}) //name, format legality
+    const [notFoundArray,setNotFoundArray] = useState([])
 
     useEffect(() => {
         getData("https://api.scryfall.com/cards/random")
@@ -66,6 +68,18 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user,e
         })
     }
 
+    const swapPrintings = async (oracle_id,newId) => {
+        let cards = [...deck]
+        for (let i = 0; i < cards.length; i++) {
+            let card = cards[i]
+            if (card.oracle_id == oracle_id) {
+                const res = await axios.get(`https://api.scryfall.com/cards/${newId}`)
+                cards[i] = res.data
+            }
+        }
+        setDeck(cards)
+    }
+
     const getDeckCards = async (identifiers) => {
         if (identifiers.length < 75) {
             let response = await axios.post(
@@ -73,8 +87,11 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user,e
                 {identifiers}
             )
             setDeck(response.data.data)
+            console.log("Cards not Found",response.data.not_found)
+            setNotFoundArray(response.data.not_found)
         } else {
             let cards = []
+            let notFound = []
             for (let i = 0; i < identifiers.length; i += 75) {
                 let ids = i + 75 < identifiers.length ? identifiers.slice(i,i+75) : identifiers.slice(i)
                 let response = await axios.post(
@@ -82,10 +99,63 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user,e
                     {identifiers:ids}
                 )
                 cards = [...cards,...response.data.data]
+                notFound = [...notFound,...response.data.not_found]
+                console.log("Cards not Found",response.data.not_found)
             }
             setDeck(cards)
+            setNotFoundArray(notFound)
         }
+    }
+
+    const getDeckCardsWithNums = async (cardInfo) => {
+        let identifiers = []
+        let numCopies = []
+        cardInfo.forEach(card => {
+            identifiers.push(card.id)
+            numCopies.push(card.num_copies)
+        })
+        let cards = []
+        console.log("Identifiers",identifiers)
+        if (identifiers.length < 75) {
+            let response = await axios.post(
+                "https://api.scryfall.com/cards/collection",
+                {identifiers}
+            )
+            cards = response.data.data
+            console.log("Cards not Found",response.data.not_found)
+            setNotFoundArray(response.data.not_found)
+        } else {
+            let notFound = []
+            for (let i = 0; i < identifiers.length; i += 75) {
+                let ids = i + 75 < identifiers.length ? identifiers.slice(i,i+75) : identifiers.slice(i)
+                let response = await axios.post(
+                    "https://api.scryfall.com/cards/collection",
+                    {identifiers:ids}
+                )
+                cards = [...cards,...response.data.data]
+                notFound = [...notFound,...response.data.not_found]
+                console.log("Cards not Found",response.data.not_found)
+            }
+            setNotFoundArray(notFound)
+        }
+        let updatedCards = []
+        cardInfo.forEach(info => {
+            let card = cards.filter(card => card?.set == info.id.set && card?.collector_number == info.id.collector_number)?.[0]
+            if (card) {
+                card["num_copies"] = info.num_copies
+                updatedCards.push(card)
+            }
+        })
+        setDeck(updatedCards)
         //console.log("Cards not Found",response.data.not_found)
+    }
+
+    const getNamedCard = async (name) => {
+        const res = await axios.get(`https://api.scryfall.com/cards/named?fuzzy=${name}`).catch(err => {
+            //console.log("Error",err)
+            return null;
+        });
+        return res?.data
     }
 
     const loadDeck = async deckId => {
@@ -97,7 +167,8 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user,e
                 deckId
             }
         );
-        getDeckCards(response.data)
+        setDeckInfo(response.data.deck_info || {name:"Unnamed Deck"})
+        getDeckCards(response.data.cards)
     }
 
     const createDeck = async () => {
@@ -113,7 +184,8 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user,e
             "http://localhost:4000/deck/create",
             {
                 uuid: user.uuid,
-                deckData:deckData
+                deckData:deckData,
+                deckInfo
             }
         );
         setDeckUUID(response.data)
@@ -133,7 +205,8 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user,e
             {
                 uuid: user.uuid,
                 deckId,
-                deckData
+                deckData,
+                deckInfo
             }
         );
         setDeckUUID(response.data)
@@ -161,7 +234,6 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user,e
     }
 
     useEffect(() => {
-        console.log("Deck",deck)
         if (deck.length > 0 && deck.some((card) => !card?.num_copies))
             checkNumCards()
     },[deck])
@@ -228,21 +300,6 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user,e
         }
     }
 
-    // const addIdentifier = (id,num) => {
-    //     let num_copies = num ? num : 1
-    //     console.log("Add id info",id,num)
-    //     let newID = {
-    //         id:id, 
-    //     }
-    //     if (identifiers.length == 0)
-    //         setIdentifiers([newID])
-    //     else {
-    //         let hasCopy = identifiers.filter(id => id.id == newID.id)
-    //         if (!hasCopy) 
-    //             setIdentifiers(identifiers => [...identifiers,newID])
-    //     }
-    // }
-
     const removeCard = (card) => {
         setDeck(deck.filter(deckCard => 
             deckCard.id != card.id
@@ -296,7 +353,7 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user,e
         </nav>
         <div className='nav-spacer'></div>
         {(seeDeck ?
-            <Deck getDetailedCard={getDetailedCard} changeNum={changeNumCopies} userDecks={userDecks} deck={deck} setDeck={setDeck} deckIdFunctions={{deckUUID,setDeckUUID}} deckFunctions={{removeCard,createDeck,loadDeck,deleteDeck,updateDeck,}}/>
+            <Deck swapPrintings={swapPrintings} notFoundArray={notFoundArray} getNamedCard={getNamedCard} getDeckCardsWithNums={getDeckCardsWithNums} deckInfo={deckInfo} setDeckInfo={setDeckInfo} getDetailedCard={getDetailedCard} changeNum={changeNumCopies} userDecks={userDecks} deck={deck} setDeck={setDeck} deckIdFunctions={{deckUUID,setDeckUUID}} deckFunctions={{removeCard,createDeck,loadDeck,deleteDeck,updateDeck,}}/>
         :
             (cards.length != 1 ? 
             <section>

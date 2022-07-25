@@ -1,13 +1,9 @@
-.num-copies {
-    margin: 0em 1em;
-    margin-bottom: 10px;
-    padding-bottom: 10px;
+.num-copies-box {
+    margin: 0 10%;
+    width: 80%;
 }
 
-.arrows {
-    padding: 0px;
-    margin: 0px;
-    font-size: 1.75em;
-    font-weight: 500;
-    color: #536659;
+.deck-card-link:hover {
+    color: #6A5480;
+    cursor: pointer;
 }

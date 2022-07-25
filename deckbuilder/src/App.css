@@ -146,6 +146,10 @@ option:hover {
   text-align: center;
 }
 
+.inline-block {
+  display: inline-block;
+}
+
 /*
 red     #e68b8a
 orange  #e6bd81
