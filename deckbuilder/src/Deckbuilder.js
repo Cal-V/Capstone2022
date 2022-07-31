@@ -73,56 +73,73 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user,e
         for (let i = 0; i < cards.length; i++) {
             let card = cards[i]
             if (card.oracle_id == oracle_id) {
+                let num_copies = card.numCopies || 1
+                let category = card.category || "No category"
                 const res = await axios.get(`https://api.scryfall.com/cards/${newId}`)
-                cards[i] = res.data
+                cards[i] = {...res.data,num_copies,category}
             }
         }
         setDeck(cards)
     }
 
-    const getDeckCards = async (identifiers) => {
-        if (identifiers.length < 75) {
-            let response = await axios.post(
-                "https://api.scryfall.com/cards/collection",
-                {identifiers}
-            )
-            setDeck(response.data.data)
-            console.log("Cards not Found",response.data.not_found)
-            setNotFoundArray(response.data.not_found)
-        } else {
-            let cards = []
-            let notFound = []
-            for (let i = 0; i < identifiers.length; i += 75) {
-                let ids = i + 75 < identifiers.length ? identifiers.slice(i,i+75) : identifiers.slice(i)
+    const getDeckCards = async (cardInput) => {
+        let identifiers = [];
+        cardInput.forEach(id => {
+            identifiers.push({id:id.id})
+        })
+        let cards = []
+        if (identifiers?.length > 0) {
+            if (identifiers.length < 75) {
                 let response = await axios.post(
                     "https://api.scryfall.com/cards/collection",
-                    {identifiers:ids}
+                    {identifiers}
                 )
-                cards = [...cards,...response.data.data]
-                notFound = [...notFound,...response.data.not_found]
+                cards = response.data.data
                 console.log("Cards not Found",response.data.not_found)
+                setNotFoundArray(response.data.not_found)
+            } else {
+                let notFound = []
+                for (let i = 0; i < identifiers.length; i += 75) {
+                    let ids = i + 75 < identifiers.length ? identifiers.slice(i,i+75) : identifiers.slice(i)
+                    let response = await axios.post(
+                        "https://api.scryfall.com/cards/collection",
+                        {identifiers:ids}
+                    )
+                    cards = [...cards,...response.data.data]
+                    notFound = [...notFound,...response.data.not_found]
+                    console.log("Cards not Found",response.data.not_found)
+                }
+                setNotFoundArray(notFound)
             }
-            setDeck(cards)
-            setNotFoundArray(notFound)
+            let updatedCards = []
+            cardInput.forEach(info => {
+                let card = cards.filter(card => card?.id == info.id)?.[0]
+                if (card) {
+                    card.num_copies = info.num_copies || 1
+                    card.category = info.category || "No Category"
+                    updatedCards.push(card)
+                }
+            })
+            setDeck(updatedCards)
+        } else {
+            setDeck([])
+            setDeckInfo({name: "Unnamed Deck"})
+            setNotFoundArray([])
         }
     }
 
     const getDeckCardsWithNums = async (cardInfo) => {
         let identifiers = []
-        let numCopies = []
         cardInfo.forEach(card => {
             identifiers.push(card.id)
-            numCopies.push(card.num_copies)
         })
         let cards = []
-        console.log("Identifiers",identifiers)
         if (identifiers.length < 75) {
             let response = await axios.post(
                 "https://api.scryfall.com/cards/collection",
                 {identifiers}
             )
             cards = response.data.data
-            console.log("Cards not Found",response.data.not_found)
             setNotFoundArray(response.data.not_found)
         } else {
             let notFound = []
@@ -134,7 +151,6 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user,e
                 )
                 cards = [...cards,...response.data.data]
                 notFound = [...notFound,...response.data.not_found]
-                console.log("Cards not Found",response.data.not_found)
             }
             setNotFoundArray(notFound)
         }
@@ -142,7 +158,8 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user,e
         cardInfo.forEach(info => {
             let card = cards.filter(card => card?.set == info.id.set && card?.collector_number == info.id.collector_number)?.[0]
             if (card) {
-                card["num_copies"] = info.num_copies
+                card.num_copies = info.num_copies || 1
+                card.category = info.category || "No Category"
                 updatedCards.push(card)
             }
         })
@@ -150,8 +167,8 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user,e
         //console.log("Cards not Found",response.data.not_found)
     }
 
-    const getNamedCard = async (name) => {
-        const res = await axios.get(`https://api.scryfall.com/cards/named?fuzzy=${name}`).catch(err => {
+    const getNamedCard = async (name,set) => {
+        const res = await axios.get(`https://api.scryfall.com/cards/named?fuzzy=${name}${set ? `&set=${set}` : ""}`).catch(err => {
             //console.log("Error",err)
             return null;
         });
@@ -176,7 +193,8 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user,e
         deck.forEach(card => {
             deckData.push({
                 id: card.id,
-                num_copies: card.num_copies
+                num_copies: card.num_copies,
+                category: card.category
             })
         })
         console.log(deckData)
@@ -197,7 +215,8 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user,e
         deck.forEach(card => {
             deckData.push({
                 id: card.id,
-                num_copies: card.num_copies
+                num_copies: card.num_copies,
+                category: card.category
             })
         })
         const response = await axios.post(
@@ -226,16 +245,19 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user,e
         setUserDecks()
     }
 
-    const checkNumCards = () => {
-        let deckCards = deck.map((card) => (
-            card?.num_copies ? card = card : card = {...card,num_copies:1}
-        ))
+    const updateNewCardData = () => {
+        let deckCards = [...deck]
+        deckCards.forEach(card => {
+            card.num_copies = card.num_copies || 1
+            card.category = card.category || "No Category"
+        });
         setDeck(deckCards)
     }
 
     useEffect(() => {
         if (deck.length > 0 && deck.some((card) => !card?.num_copies))
-            checkNumCards()
+            updateNewCardData()
+        setUserDecks()
     },[deck])
 
     useEffect(() => {
@@ -248,8 +270,9 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user,e
         getData(`https://api.scryfall.com/cards/search?order=${order}&q=${searchTerm.replace('(',"%28").replace(')',"%29").replace(' ',"%20").replace(':',"%3A").replace('=',"%3D")}&dir=${direction}`)
     }, [order,direction])
 
-    const addCardToDeck = async (id,num) => {
+    const addCardToDeck = async (id,num,cat) => {
         let num_copies = num || 1
+        let category = cat || "No Category"
         if (!deck.some(card => card.id == id && card.num_copies)) {
             let response = await axios.post(
                 "https://api.scryfall.com/cards/collection",
@@ -274,6 +297,7 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user,e
         setDeck(deckCards)
     }
 
+    //default category and num copies bc it's added from search
     const addMultipleToDeck = async (identifiers) => {
         
         if (identifiers.length + deck.length < 75) {
@@ -294,7 +318,7 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user,e
                 cards = [...cards,...response.data.data]
             }
             cards = cards.map(card => (
-                card = {...card,num_copies:1}
+                card = {...card,num_copies:1,category:"No Category"}
             ))
             setDeck([...deck,...cards])
         }

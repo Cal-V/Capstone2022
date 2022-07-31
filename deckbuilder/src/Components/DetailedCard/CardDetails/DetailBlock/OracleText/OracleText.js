@@ -5,12 +5,15 @@ import flavorWords from "./flavorWords.js"
 
 function OracleText({card_text}) {
 
+    //regex including all the sections of oracle text that are in itallics
     const [iRegex, setIRegex] = useState()
 
+    //creating the regex dynamically on load
     useEffect(() => {
         makeRegex();
     }, [])
 
+    //loading in the data for and creating the regex from a separate file so it can be updated as needed when new cards come out
     const makeRegex = () => {
         let flavors = flavorWords.replace("\n","|")
         let re = new RegExp(`\\([+{}",/:. 'A-Za-z;/0-9∞½-]+\\)|${flavors}`, 'g')
@@ -20,12 +23,12 @@ function OracleText({card_text}) {
     //split text into each line
     const oracleTextLines = card_text.split("\n")
     
-    //const iRegex = /\([+{}",/:. 'A-Za-z/0-9∞½-]+\)|(Adamant|Addendum|Alliance|Battalion|Bloodrush|Channel|Chroma|Cohort|Constellation|Converge|Council's dilemma|Coven|Delirium|Domain|Eminence|Enrage|Fateful hour|Ferocious|Formidable|Grandeur|Hellbent|Heroic|Imprint|Inspired|Join forces|Kinship|Landfall|Lieutenant|Magecraft|Metalcraft|Morbid|Pack tactics|Parley|Radiance|Raid|Rally|Revolt|Spell mastery|Strive|Sweep|Tempting offer|Underdog|Undergrowth|Will of the council)(?= — )/g
-
+    //splitting the lines into what isn't in itallics
     const oracleTextGroups = oracleTextLines.map((line) => (
         line.split(iRegex)
     ))
 
+    //matching the lines for what is in itallics
     const oracleTextFlavors = oracleTextLines.map(line => (
         line.match(iRegex)
     ))
@@ -38,6 +41,7 @@ function OracleText({card_text}) {
                     <div key={groupIndex} className="oracle-text-holder">
                         {group.map((line,lineIndex) => (
                             <div key={lineIndex} className="inline">
+                                {/* loading the normal and then italiics of each line to be formatted further in OracleLine.js */}
                                 <OracleLine line={line} reminder={false} className="inline" />{oracleTextFlavors?.[groupIndex]?.[lineIndex] ? <OracleLine className="inline" line={oracleTextFlavors[groupIndex][lineIndex]} reminder={true}/> : <></>}
                             </div>
                         ))}

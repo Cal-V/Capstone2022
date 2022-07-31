@@ -14,12 +14,20 @@
 
 .deck-data-item {
     flex: 1;
-    margin: 0px 10px;
+    margin: 0px;
+}
+
+.deck-loading-settings {
+    margin: 0px 5px;
+}
+
+.format-label {
+    margin: 0px 5px 0px 0px;
 }
 
 .deck-text-holder {
     padding: 30px;
-    flex: 1.5;
+    flex: 1;
 }
 
 textarea {
@@ -33,6 +41,12 @@ textarea {
 .deck-list-holder {
     width: 95%;
     margin-right: 3%;
+}
+
+.card-holder {
+    gap: .5em;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px,1fr));
 }
 
 .deck-select {
@@ -90,4 +104,16 @@ textarea {
 
 #deck-name-label {
     margin-right: 105px;
+}
+
+.full-width {
+    grid-column: 1 / -1;
+}
+
+.inline {
+    display: inline;
+}
+
+.deck-text-button {
+    margin: 3px;
 }

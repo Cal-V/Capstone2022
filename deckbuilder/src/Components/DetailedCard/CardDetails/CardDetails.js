@@ -3,13 +3,17 @@ import OracleText from './DetailBlock/OracleText/OracleText'
 import {useState} from 'react'
 import Symbol from "./DetailBlock/Symbol/Symbol"
 import "./CardDetails.css"
+import CardList from '../../CardList/CardList'
 
 function CardDetails({card, addToDeck, alternateArts,getDetailedCard}) {
     
+    //card_faced and transformIndex same as Card and DeckCard
     const card_faces = (card.card_faces ? card.card_faces : [card])
-
     const [transformIndex, setTransformIndex] = useState(0)
 
+    const [rotateDegrees,setRotateDegrees] = useState(0)
+
+    //laoding an alternate printing and reset the scroll to the top
     const loadNewArt = (card) => {
         getDetailedCard(card.id)
         window.scrollTo({
@@ -33,22 +37,22 @@ function CardDetails({card, addToDeck, alternateArts,getDetailedCard}) {
             {/* Main card holder with image and card text */}
             <div id='detailed-card-holder'>
                 {/* Holding the image itself */}
-                <div id='detailed-card-img-holder'>
-                    {!card.image_uris ? 
-                    <>
-                        <img id='detailed-card-img' className='card-style' src={card_faces[transformIndex].image_uris.png} />
-                        <div>
-                            <button className="transform-button" onClick={() => {setTransformIndex((transformIndex+1)%2)}}>Flip</button>
-                            <button className='transform-button' onClick={() => addToDeck(card.id)}>Add to deck</button>
-                        </div>
-                    </>
-                    :
-                    <>
-                        <img id='detailed-card-img' className='card-style' src={card.image_uris.png} />
-                        <div>
-                            <button className='transform-button' onClick={() => addToDeck(card.id)}>Add to deck</button>
-                        </div>
-                    </>}
+                <div className='card-img-box'>
+                    <div id='detailed-card-img-holder' className={rotateDegrees > 0 ? ` rotate-${rotateDegrees}` : ""}>
+                        {!card.image_uris ? 
+                        <>
+                            <img id='detailed-card-img' className={`card-border card-shadow-${rotateDegrees}`} src={card_faces[transformIndex].image_uris.png} />
+                        </>
+                        :
+                        <>
+                            <img id='detailed-card-img' className={`card-border card-shadow-${rotateDegrees}`} src={card.image_uris.png} />
+                        </>}
+                    </div>
+                    <div className='card-buttons'>
+                        {!card.image_uris ? <button className="transform-button" onClick={() => {setTransformIndex((transformIndex+1)%2)}}>Flip</button> : <></>}
+                        <button className='transform-button' onClick={() => addToDeck(card.id)}>Add to deck</button>
+                        <button className='transform-button' onClick={() => setRotateDegrees((rotateDegrees+90)%360)}>Rotate</button>
+                    </div>
                 </div>
                 {/* End image box */}
 
@@ -57,6 +61,7 @@ function CardDetails({card, addToDeck, alternateArts,getDetailedCard}) {
                     {card_faces.map((card,index) => (
                         <div key={index}>
                             <div className={`detail-block${(index > 0 ? " top-border" : "")}`}><h5 className={`${card.name.length > 15 ? `${card.name.length > 27 ? "really-" : ""}long-name` : ""}`}>{(card.printed_name ? card.printed_name : card.name)}</h5></div>
+                            {/* iterating through the manacost symbols with that regex and then loading the Symbols that match it */}
                             {card.mana_cost ? <div className='detail-block'>
                                 <p>{
                                     card.mana_cost.match(/[A-Z/0-9∞½]+(?=})/g).map((symbol,index) => (
@@ -64,13 +69,16 @@ function CardDetails({card, addToDeck, alternateArts,getDetailedCard}) {
                                     ))
                                 }</p>
                             </div> : <></>}
+                            {/* showing by default the text of the language on the card, else the english version */}
                             <div className='detail-block'><p><strong>{(card.printed_type_line ? card.printed_type_line : card.type_line)}</strong></p></div>
+                            {/* loading the OracleText component to format all of the text (also defaulting to printed text if present) */}
                             {card.oracle_text ? 
                                 <div className={card.power || card.flavor_text || card.loyalty ? "detail-block" : ""}>
                                 <OracleText card_text={card.printed_text ? card.printed_text : card.oracle_text} />
                             </div>
                             :
                             <></>}
+                            {/* changing formatting depending on language to match the card */}
                             {card.flavor_text ? <div className={card.power || card.loyalty ? "detail-block" : ""}><p>{card.lang == "ja" || card.lang == "zhs" || card.lang == "zht" ? card.flavor_text : <i>{card.flavor_text}</i>}</p></div> : <></>}
                             {card.power ? <div className='right-align'><p><strong>{card.power}/{card.toughness}</strong></p></div> : <></>}
                             {card.loyalty ? <div className='right-align'><p><strong>Loyalty: {card.loyalty}</strong></p></div> : <></>}
