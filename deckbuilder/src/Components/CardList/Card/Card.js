@@ -20,7 +20,7 @@ export const Card = ({card,getDetailedCard,addToDeck}) => {
             {/* either giving an ability to flip the card if needed, else just showing the front face */}
             {!card.image_uris ? 
                 <>
-                    <img className='card-img card-style' onContextMenu={handleRightClick} onClick={() => getDetailedCard(card.id)} src={card_faces[transformIndex].image_uris.normal} />
+                    <img className={`card-img card-style ${transformIndex == 0 ? "face-up" : "flipped"}`} onContextMenu={handleRightClick} onClick={() => getDetailedCard(card.id)} src={card_faces[transformIndex].image_uris.normal} />
                     <button className="small-transform-button" onClick={() => {setTransformIndex((transformIndex+1)%2)}}>Flip</button>
                 </>
                 :

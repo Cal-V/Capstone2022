@@ -150,6 +150,40 @@ option:hover {
   display: inline-block;
 }
 
+/*///////////////////
+for animating flipping cards with uniquie back faces
+////////////////////*/
+
+@keyframes flip1 {
+  0% {
+    transform-style: preserve-3d;
+    transform: rotateY(100deg);
+  }
+  100% {
+    transform-style: preserve-3d;
+    transform: rotateY(0deg);
+  }
+}
+
+@keyframes flip2 {
+  0% {
+    transform-style: preserve-3d;
+    transform: rotateY(100deg);
+  }
+  100% {
+    transform-style: preserve-3d;
+    transform: rotateY(0deg);
+  }
+}
+
+.face-up {
+  animation: flip1 1s;
+}
+
+.flipped {
+  animation: flip2 1s;
+}
+
 /*
 red     #e68b8a
 orange  #e6bd81

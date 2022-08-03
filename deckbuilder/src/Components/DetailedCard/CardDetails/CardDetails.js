@@ -11,7 +11,7 @@ function CardDetails({card, addToDeck, alternateArts,getDetailedCard}) {
     const card_faces = (card.card_faces ? card.card_faces : [card])
     const [transformIndex, setTransformIndex] = useState(0)
 
-    const [rotateDegrees,setRotateDegrees] = useState(0)
+    const [rotateDegrees,setRotateDegrees] = useState(360)
 
     //laoding an alternate printing and reset the scroll to the top
     const loadNewArt = (card) => {
@@ -38,7 +38,7 @@ function CardDetails({card, addToDeck, alternateArts,getDetailedCard}) {
             <div id='detailed-card-holder'>
                 {/* Holding the image itself */}
                 <div className='card-img-box'>
-                    <div id='detailed-card-img-holder' className={rotateDegrees > 0 ? ` rotate-${rotateDegrees}` : ""}>
+                    <div id='detailed-card-img-holder' className={`rotate-${rotateDegrees} ${transformIndex == 0 ? "face-up" : "flipped"}`}>
                         {!card.image_uris ? 
                         <>
                             <img id='detailed-card-img' className={`card-border card-shadow-${rotateDegrees}`} src={card_faces[transformIndex].image_uris.png} />

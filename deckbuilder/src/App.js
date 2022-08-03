@@ -3,7 +3,6 @@ import Deckbuilder from './Deckbuilder';
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-
 function App() {
 
   //username and password for the user, probably will change so it's not just saved here
@@ -21,6 +20,8 @@ function App() {
 
   //for showing the login modal
   const [loginVisible,setLoginVisible] = useState(false)
+
+  
 
   //checking the local storage for the cookie for the user being logged in on load
   useEffect(() => {
