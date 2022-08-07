@@ -3,8 +3,16 @@ import DeckCard from './DeckCard/DeckCard.js'
 import {useState, useEffect} from "react"
 import DeckText from './DeckText.js'
 import "./Deck.css"
+import { useNavigate, useParams } from 'react-router-dom'
 
-function Deck({deck,deckIdFunctions,deckFunctions,userDecks,changeNum,getDetailedCard,deckInfo,setDeckInfo,getDeckCardsWithNums,getNamedCard,notFoundArray,swapPrintings}) {
+function Deck({setDeck,deck,deckIdFunctions,deckFunctions,userDecks,changeNum,getDetailedCard,deckInfo,setDeckInfo,getDeckCardsWithNums,getNamedCard,notFoundArray,swapPrintings}) {
+
+    const params = useParams()
+
+    useEffect(() => {
+        if (params.id)
+            deckFunctions.loadDeck(params.id)
+    },[])
 
     const [fileDownloadUrl,setFileDownloadUrl] = useState(null)
     //bool for if the cards are shown as images or just as names
@@ -16,6 +24,10 @@ function Deck({deck,deckIdFunctions,deckFunctions,userDecks,changeNum,getDetaile
     const [categoryList,setCategoryList] = useState("")
     //the format of the file for export
     const [fileFormat,setFileFormat] = useState("full")
+
+    const [changeCards,setChangeCards] = useState(true)
+
+    const navigate = useNavigate()
 
     //initiating the file download when the url updates
     useEffect(() => {
@@ -43,6 +55,7 @@ function Deck({deck,deckIdFunctions,deckFunctions,userDecks,changeNum,getDetaile
             return categories.findIndex(category => category == a.category) - categories.findIndex(category => category == b.category)
         })
         setGroupedCards(cards)
+        console.log("Changed Deck Length",deck.length)
     },[deck])
 
     //checking if the deck is legal when the format or the deck changes
@@ -68,6 +81,9 @@ function Deck({deck,deckIdFunctions,deckFunctions,userDecks,changeNum,getDetaile
     const deleteCurrentDeck = evt => {
         evt.preventDefault();
         deckFunctions.deleteDeck(deckIdFunctions.deckUUID)
+        setDeck([])
+        setCategoryList("")
+        navigate("/deck")
     }
 
     //reads in the input file and updates the deck
@@ -183,6 +199,28 @@ function Deck({deck,deckIdFunctions,deckFunctions,userDecks,changeNum,getDetaile
         setFileDownloadUrl(URL.createObjectURL(blob))
     }
 
+    const saveDeck = async () => {
+        const id = await deckFunctions.createDeck();
+        setIsSaved(true)
+        navigate(`/deck/${id}`)
+    }
+
+    const changeDeck = (evt) => {
+        let id = evt.target.value
+        console.log("url id",params.id)
+        console.log("new id",id)
+        if (id != params.id) {
+            if (id?.length > 12) {
+                deckFunctions.loadDeck(id);
+                console.log("UUID changed")
+            } else {
+                setDeck([])
+                setCategoryList("")
+            }
+        }
+        navigate(`/deck/${id}`)
+    }
+
     return (
         <>
             <h2>{deckInfo.name}</h2>
@@ -193,7 +231,7 @@ function Deck({deck,deckIdFunctions,deckFunctions,userDecks,changeNum,getDetaile
                 <div className='second-row-holder'>
                     <div className='inline-block deck-data-item' id="database-buttons">
                         <label>{isSaved ? `${deckInfo.name} saved` : ""}</label><br />
-                        <button className='deck-button' onClick={() => {deckFunctions.createDeck();setIsSaved(true)}}>Save deck</button>
+                        <button className='deck-button' onClick={() => {saveDeck()}}>Save deck</button>
                         <button className='deck-button' onClick={() => {deckFunctions.updateDeck(deckIdFunctions.deckUUID);setIsSaved(true)}}>Update deck</button>
                         <button className='deck-button' onClick={deleteCurrentDeck}>Delete deck</button>
                     </div>
@@ -215,8 +253,8 @@ function Deck({deck,deckIdFunctions,deckFunctions,userDecks,changeNum,getDetaile
                     <div className='inline-block deck-data-item'>
                         <div className='inline-block deck-loading-settings'>
                             <label>Load Deck</label><br />
-                            <select onChange={(e) => {deckIdFunctions.setDeckUUID(e.target.value);}} value={deckFunctions.deckUUID}>
-                                <option key={0} value={null}>Choose Deck</option>
+                            <select onChange={changeDeck} value={deckFunctions.deckUUID}>
+                                <option key={0} value="new%20deck">Choose Deck</option>
                                 {userDecks.map((deck) => (
                                     <option key={deck._deck_id} value={deck._deck_id}>{deck.deck_info.name}</option>
                                 ))}
@@ -262,7 +300,13 @@ function Deck({deck,deckIdFunctions,deckFunctions,userDecks,changeNum,getDetaile
                                             deck.filter(card => card.category == category).map(card => (
                                                 card ? <DeckCard swapPrintings={swapPrintings} getDetailedCard={getDetailedCard} image={images} key={card.id} card={card} changeNumCards={changeNumCards} removeCard={deckFunctions.removeCard}/> : <></>
                                             ))
-                                        }</div>
+                                        }
+                                        <div className='card-img'></div>
+                                        <div className='card-img'></div>
+                                        <div className='card-img'></div>
+                                        <div className='card-img'></div>
+                                        <div className='card-img'></div>
+                                        </div>
                                     </div>
                                 ))
                             }</>

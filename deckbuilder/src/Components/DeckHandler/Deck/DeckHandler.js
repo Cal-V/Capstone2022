@@ -2,13 +2,14 @@ import React from 'react'
 import {useEffect,useState} from 'react'
 import Deck from "./Deck"
 import axios from "axios";
+import {useParams} from "react-router-dom"
 
-function DeckHandler({user,deck,setDeck,userDecks,setUserDecks,getDetailedCard}) {
+function DeckHandler({user,deck,setDeck,userDecks,setUserDecks,getDetailedCard,deckUUID,setDeckUUID}) {
 
-    const [deckUUID, setDeckUUID] = useState(null)
     const [deckInfo, setDeckInfo] = useState({name: "Unnamed Deck"}) //name, format legality
     const [notFoundArray,setNotFoundArray] = useState([])
 
+    const params = useParams()
 
     const swapPrintings = async (oracle_id,newId) => {
         let cards = [...deck]
@@ -25,6 +26,7 @@ function DeckHandler({user,deck,setDeck,userDecks,setUserDecks,getDetailedCard})
     }
 
     const getDeckCards = async (cardInput) => {
+        console.log("getDeckCards length",cardInput.length)
         let identifiers = [];
         cardInput.forEach(id => {
             identifiers.push({id:id.id})
@@ -119,6 +121,7 @@ function DeckHandler({user,deck,setDeck,userDecks,setUserDecks,getDetailedCard})
 
     const loadDeck = async deckId => {
         setDeckUUID(deckId)
+        console.log("Load",deckId)
         const response = await axios.post(
             "http://localhost:4000/deck/read",
             {
@@ -149,7 +152,9 @@ function DeckHandler({user,deck,setDeck,userDecks,setUserDecks,getDetailedCard})
             }
         );
         setDeckUUID(response.data)
+        console.log("UUID changed")
         setUserDecks()
+        return response.data
     }
 
     const updateDeck = async deckId => {
@@ -171,12 +176,14 @@ function DeckHandler({user,deck,setDeck,userDecks,setUserDecks,getDetailedCard})
             }
         );
         setDeckUUID(response.data)
+        console.log("UUID changed")
         setUserDecks()
     }
 
     const deleteDeck = async deckId => {
         setDeck([])
         setDeckUUID(null)
+        console.log("UUID changed")
         const response = await axios.post(
             "http://localhost:4000/deck/delete",
             {
@@ -201,11 +208,6 @@ function DeckHandler({user,deck,setDeck,userDecks,setUserDecks,getDetailedCard})
             updateNewCardData()
         setUserDecks()
     },[deck])
-
-    useEffect(() => {
-        if(deckUUID)
-            loadDeck(deckUUID)
-    },[deckUUID])
 
     const changeNumCopies = (id,num_copies) => {
         let deckCards = []

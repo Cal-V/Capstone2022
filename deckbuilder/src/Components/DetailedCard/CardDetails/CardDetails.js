@@ -4,18 +4,23 @@ import {useState,useEffect} from 'react'
 import Symbol from "./DetailBlock/Symbol/Symbol"
 import "./CardDetails.css"
 import axios from "axios";
+import {useParams} from 'react-router-dom'
 
-function CardDetails({card,addToDeck,getDetailedCard}) {
+function CardDetails({addToDeck,getDetailedCard}) {
 
-    useEffect(() => {
-        if (!card.id) {
-            setRandomCard()
-        }
-    },[])
+    const [card,setCard] = useState({})
 
-    const setRandomCard = async () => {
-        card = await axios.get("https://api.scryfall.com/cards/random")
+    const getCard = async (id) => {
+        const response = await axios.get(`https://api.scryfall.com/cards/${id}`)
+        setCard(response.data)
+        return response.data
     }
+
+    const params = useParams()
+    
+    useEffect(() => {
+        getCard(params.id)
+    },[params])
     
     //card_faces and transformIndex same as Card and DeckCard
     const card_faces = (card.card_faces ? card.card_faces : [card])
@@ -40,24 +45,24 @@ function CardDetails({card,addToDeck,getDetailedCard}) {
     }
 
     // //laoding an alternate printing and reset the scroll to the top
-    // const loadNewArt = (card) => {
-    //     getDetailedCard(card.id)
-    //     window.scrollTo({
-    //         top: 0
-    //     });
-    // }
+    const loadNewArt = (card) => {
+        getDetailedCard(card.id)
+        window.scrollTo({
+            top: 0
+        });
+    }
 
     if (card.id) {
         return (
             <div className='details-container'>
                 {/* List of all the printings of the card and their respective usd prices */}
                 <div className='alt-arts half-size'>
-                    {/* {printings.map((printing) => (
+                    {printings.map((printing) => (
                         <div onClick={() => loadNewArt(printing)} key={printing.id} className={`alt-art-box selectable${card.id == printing.id ? " current-selected" : ""}`}>
                             <p className='inline'><b>{printing.set}</b> ({printing.collector_number})</p>
                             <p className='right-align inline-text-right'>{printing.prices.usd ? <b><a href={printing.purchase_uris.tcgplayer} target="_blank">{` $${printing.prices.usd}`}</a></b> : ""}</p>
                         </div>
-                    ))} */}
+                    ))}
                 </div>
                 {/* end printing list */}
     
@@ -77,7 +82,7 @@ function CardDetails({card,addToDeck,getDetailedCard}) {
                         </div>
                         <div className='card-buttons'>
                             {!card.image_uris ? <button className="transform-button" onClick={() => {setTransformIndex((transformIndex+1)%2)}}>Flip</button> : <></>}
-                            {/* <button className='transform-button' onClick={() => addToDeck(card.id)}>Add to deck</button> */}
+                            <button className='transform-button' onClick={() => addToDeck(card.id)}>Add to deck</button>
                             <button className='transform-button' onClick={() => setRotateDegrees((rotateDegrees+90)%360)}>Rotate</button>
                         </div>
                     </div>
