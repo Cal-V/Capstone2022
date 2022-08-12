@@ -26,7 +26,7 @@ function DeckText({deck,formatText,getIdentifiers,getNamedCard,notFoundArray,cat
             let line = lines[i]
             if (line.length > 0) {
                 //seeing if it's a category line
-                if (line.match(/\*\*[A-Za-z 0-9,.]+\*\*/)) {
+                if (line.match(/\*\*[A-Za-z 0-9,./\\]+\*\*/)) {
                     textLines += line + "\n"
                 } else {
                     //checking for the set code (usually three digits long of letters and numbers)
@@ -88,7 +88,7 @@ function DeckText({deck,formatText,getIdentifiers,getNamedCard,notFoundArray,cat
             //getting the individual lines
             fileText.split("\n").forEach(line => {
                 //checking if it's a category line and skipping it
-                if (!line.match(/\*\*[A-Za-z 0-9,.]+\*\*/)) {
+                if (!line.match(/\*\*[A-Za-z 0-9,./\\]+\*\*/)) {
                     //finding the name between the first space and right before the set
                     let newName = line.substring(line.indexOf(" "),line.indexOf(" ("))
                     //making sure it's a valid name and adding it to the variable

@@ -1,15 +1,11 @@
 import React from 'react'
 import {useEffect,useState} from 'react'
-import Deck from "./Deck"
+import Deck from "./Deck/Deck"
 import axios from "axios";
-import {useParams} from "react-router-dom"
 
-function DeckHandler({user,deck,setDeck,userDecks,setUserDecks,getDetailedCard,deckUUID,setDeckUUID}) {
+function DeckHandler({deckInfo,setDeckInfo,user,deck,setDeck,userDecks,setUserDecks,getDetailedCard,deckUUID,setDeckUUID}) {
 
-    const [deckInfo, setDeckInfo] = useState({name: "Unnamed Deck"}) //name, format legality
     const [notFoundArray,setNotFoundArray] = useState([])
-
-    const params = useParams()
 
     const swapPrintings = async (oracle_id,newId) => {
         let cards = [...deck]
@@ -26,7 +22,6 @@ function DeckHandler({user,deck,setDeck,userDecks,setUserDecks,getDetailedCard,d
     }
 
     const getDeckCards = async (cardInput) => {
-        console.log("getDeckCards length",cardInput.length)
         let identifiers = [];
         cardInput.forEach(id => {
             identifiers.push({id:id.id})
@@ -58,7 +53,7 @@ function DeckHandler({user,deck,setDeck,userDecks,setUserDecks,getDetailedCard,d
             let updatedCards = []
             cardInput.forEach(info => {
                 let card = cards.filter(card => card?.id == info.id)?.[0]
-                if (card) {
+                if (card.id) {
                     card.num_copies = info.num_copies || 1
                     card.category = info.category || "No Category"
                     updatedCards.push(card)
@@ -101,7 +96,7 @@ function DeckHandler({user,deck,setDeck,userDecks,setUserDecks,getDetailedCard,d
         let updatedCards = []
         cardInfo.forEach(info => {
             let card = cards.filter(card => card?.set == info.id.set && card?.collector_number == info.id.collector_number)?.[0]
-            if (card) {
+            if (card.id) {
                 card.num_copies = info.num_copies || 1
                 card.category = info.category || "No Category"
                 updatedCards.push(card)
@@ -121,11 +116,16 @@ function DeckHandler({user,deck,setDeck,userDecks,setUserDecks,getDetailedCard,d
 
     const loadDeck = async deckId => {
         setDeckUUID(deckId)
-        console.log("Load",deckId)
+        const loggedInUser = localStorage.getItem("user");
+        let foundUser = {}
+        //checking if the cookie exists and then updating the user to match
+        if (loggedInUser) {
+            foundUser = JSON.parse(loggedInUser);
+        }
         const response = await axios.post(
             "http://localhost:4000/deck/read",
             {
-                uuid: user.uuid,
+                uuid: foundUser.uuid,
                 deckId
             }
         );
@@ -142,7 +142,6 @@ function DeckHandler({user,deck,setDeck,userDecks,setUserDecks,getDetailedCard,d
                 category: card.category
             })
         })
-        console.log(deckData)
         const response = await axios.post(
             "http://localhost:4000/deck/create",
             {
@@ -204,9 +203,9 @@ function DeckHandler({user,deck,setDeck,userDecks,setUserDecks,getDetailedCard,d
     }
 
     useEffect(() => {
+        console.log(deck.length)
         if (deck.length > 0 && deck.some((card) => !card?.num_copies))
             updateNewCardData()
-        setUserDecks()
     },[deck])
 
     const changeNumCopies = (id,num_copies) => {
@@ -214,7 +213,6 @@ function DeckHandler({user,deck,setDeck,userDecks,setUserDecks,getDetailedCard,d
         deck.forEach(card => {
             card.id == id ? deckCards.push({...card,num_copies}) : deckCards.push(card)
         })
-        console.log("Copies changed",deckCards)
         setDeck(deckCards)
     }
 

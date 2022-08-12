@@ -1,18 +1,20 @@
 import React from 'react'
-import DeckCard from './DeckCard/DeckCard.js'
 import {useState, useEffect} from "react"
 import DeckText from './DeckText.js'
 import "./Deck.css"
 import { useNavigate, useParams } from 'react-router-dom'
+import CategoryList from "./CategoryList"
 
 function Deck({setDeck,deck,deckIdFunctions,deckFunctions,userDecks,changeNum,getDetailedCard,deckInfo,setDeckInfo,getDeckCardsWithNums,getNamedCard,notFoundArray,swapPrintings}) {
 
     const params = useParams()
 
     useEffect(() => {
-        if (params.id)
+        if (params.id) {
             deckFunctions.loadDeck(params.id)
-    },[])
+            console.log(params.id)
+        }
+    },[params.id])
 
     const [fileDownloadUrl,setFileDownloadUrl] = useState(null)
     //bool for if the cards are shown as images or just as names
@@ -25,8 +27,6 @@ function Deck({setDeck,deck,deckIdFunctions,deckFunctions,userDecks,changeNum,ge
     //the format of the file for export
     const [fileFormat,setFileFormat] = useState("full")
 
-    const [changeCards,setChangeCards] = useState(true)
-
     const navigate = useNavigate()
 
     //initiating the file download when the url updates
@@ -37,6 +37,11 @@ function Deck({setDeck,deck,deckIdFunctions,deckFunctions,userDecks,changeNum,ge
             URL.revokeObjectURL(fileDownloadUrl)
         }
     },[fileDownloadUrl])
+
+    //clearing the category list when the deck changes
+    useEffect(() => {
+        setCategoryList("")
+    },[deckIdFunctions.deckUUID])
 
     //organising the cards into their categories when the deck is updated
     useEffect(() => {
@@ -50,12 +55,10 @@ function Deck({setDeck,deck,deckIdFunctions,deckFunctions,userDecks,changeNum,ge
             }
         })
         setCategoryList(newList.trim())
-        let cards = [...deck]
-        cards = cards.sort((a,b) => {
+        let cards = deck.sort((a,b) => {
             return categories.findIndex(category => category == a.category) - categories.findIndex(category => category == b.category)
         })
         setGroupedCards(cards)
-        console.log("Changed Deck Length",deck.length)
     },[deck])
 
     //checking if the deck is legal when the format or the deck changes
@@ -130,7 +133,7 @@ function Deck({setDeck,deck,deckIdFunctions,deckFunctions,userDecks,changeNum,ge
         //iterating through the lines
         fileText = fileText.forEach(line => {
             //updating the category if it matches the format
-            if (line.match(/\*\*[A-Za-z 0-9,.]+\*\*/)) {
+            if (line.match(/\*\*[A-Za-z 0-9,./\\]+\*\*/)) {
                 category = line.substring(2,line.length-2)
             } else if (line.length > 0) {
                 //nostly used to get the number of copies (the first index) and the collector number (the last index)
@@ -207,18 +210,53 @@ function Deck({setDeck,deck,deckIdFunctions,deckFunctions,userDecks,changeNum,ge
 
     const changeDeck = (evt) => {
         let id = evt.target.value
-        console.log("url id",params.id)
-        console.log("new id",id)
         if (id != params.id) {
             if (id?.length > 12) {
                 deckFunctions.loadDeck(id);
-                console.log("UUID changed")
             } else {
                 setDeck([])
                 setCategoryList("")
             }
         }
         navigate(`/deck/${id}`)
+    }
+
+    const updateDeckCategories = (cards,category) => {
+        console.log("Deck",cards.length,category)
+        cards = cards.map(card => (
+            {...card,category}
+        ))
+        if (cards.length == 0) {
+            setDeck(deck.filter(card => card.category != category))
+        } else {
+            let changed = false;
+            let keptCards = []
+            let newCards = []
+            deck.forEach(dCard => {
+                if (!cards.some(card => card.id == dCard.id))
+                    keptCards.push(dCard)
+            })
+            console.log("Kept cards",keptCards.length)
+            cards.forEach(card => {
+                let newCard = deck.filter(dCard => dCard.id == card.id)[0]
+                if (newCard?.id)
+                    newCards.push({...newCard,category})
+            })
+            console.log("Deck New Cards",newCards)
+            let newDeck = [...newCards,...keptCards]
+            let newDeckSorted = newDeck.sort((a,b) => a.id - b.id)
+            let deckSorted = deck.sort((a,b) => a.id - b.id)
+            for (let i = 0; i < deck.length; i++) {
+                if (deckSorted[i] != newDeckSorted[i]) {
+                    changed = true;
+                    break;
+                }
+            }
+            if (changed) {
+                console.log(newDeck.filter(card => card.category == category))
+                setDeck(newDeck)
+            }
+        }
     }
 
     return (
@@ -295,18 +333,8 @@ function Deck({setDeck,deck,deckIdFunctions,deckFunctions,userDecks,changeNum,ge
                             <>{
                                 categoryList.split("\n").map((category,index) => (
                                     <div key={category}>
-                                        <h4>{category}</h4>
-                                        <div className='card-holder'>{
-                                            deck.filter(card => card.category == category).map(card => (
-                                                card ? <DeckCard swapPrintings={swapPrintings} getDetailedCard={getDetailedCard} image={images} key={card.id} card={card} changeNumCards={changeNumCards} removeCard={deckFunctions.removeCard}/> : <></>
-                                            ))
-                                        }
-                                        <div className='card-img'></div>
-                                        <div className='card-img'></div>
-                                        <div className='card-img'></div>
-                                        <div className='card-img'></div>
-                                        <div className='card-img'></div>
-                                        </div>
+                                        <h3>{category}</h3>
+                                        <CategoryList deck={deck} category={category} updateDeck={updateDeckCategories} swapPrintings={swapPrintings} getDetailedCard={getDetailedCard} images={images} changeNumCards={changeNumCards} removeCard={deckFunctions.removeCard}/>
                                     </div>
                                 ))
                             }</>
@@ -321,5 +349,3 @@ function Deck({setDeck,deck,deckIdFunctions,deckFunctions,userDecks,changeNum,ge
 }
 
 export default Deck
-
-//{card ? <DeckCard swapPrintings={swapPrintings} getDetailedCard={getDetailedCard} image={images} key={card.id} card={card} changeNumCards={changeNumCards} removeCard={deckFunctions.removeCard}/> : <></>}
