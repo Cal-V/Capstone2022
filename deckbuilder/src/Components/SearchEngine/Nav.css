@@ -1,3 +1,16 @@
+nav {
+    background-color: #536659;
+    color: #FAF5FF;
+    padding: 1em;
+    text-align: center;
+    width: 100%;
+    margin: 0px;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 5;
+}
+
 .search-form {
     display: inline-block;
 }

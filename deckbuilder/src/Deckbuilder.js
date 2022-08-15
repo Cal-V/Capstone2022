@@ -7,6 +7,7 @@ import DeckHandler from './Components/DeckHandler/DeckHandler.js';
 import axios from "axios";
 import { Route, Routes, useNavigate } from 'react-router-dom';
 import NavBar from './Components/SearchEngine/NavBar.js';
+import Advanced from './Components/SearchEngine/Advanced.js';
 
 function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user,errorMessage,userDecks,setUserDecks}) {
 
@@ -18,18 +19,14 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user,e
 
     const [searchQuery,setSearchQuery] = useState("order=name&dir=auto&q=")
 
+    useEffect(() => {
+        console.log("Deck updated", deck.length)
+    },[deck])
+
     const updateSearchQuery = (order, direction, query) => {
-        let newQ = searchQuery
-        if (order) {
-            newQ = newQ.substring(0,newQ.indexOf("order=")+6) + order + newQ.substring(newQ.indexOf("&dir="))
-        }
-        if (direction) {
-            newQ = newQ.substring(0,newQ.indexOf("$dir=")+5) + direction + newQ.substring(newQ.indexOf("&q="))
-        }
-        if (query) {
-            newQ = newQ.substring(0, newQ.indexOf("&q=")+3) + query.replace('(',"%28").replace(')',"%29").replace(' ',"%20").replace(':',"%3A").replace('=',"%3D")
-        }
-        console.log(newQ)
+        order = order || "name"
+        direction = direction || "auto"
+        let newQ = `order=${order}&dir=${direction}&q=${query}`
         setSearchQuery(newQ)
         navigate(`/search/${newQ}`)
     }
@@ -47,8 +44,6 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user,e
     }
 
     const addCardToDeck = async (id,num,cat) => {
-        console.log("Added Card ID",id)
-        console.log("prev deck",deck)
         let num_copies = num || 1
         let category = cat || "No Category"
         if (!deck.some(card => card.id == id && card.num_copies)) {
@@ -94,8 +89,9 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user,e
         <Routes>
             <Route path={`search/:query`} element={<SearchEngineHandler addMultipleToDeck={addMultipleToDeck} getDetailedCard={getDetailedCard} deck={deck} loginVisible={loginVisible} setLoginVisible={setLoginVisible} handleLogout={userMethods.handleLogout} setDetailedCard={getDetailedCard} addCardToDeck={addCardToDeck} setDeck={setDeck}/>} />
             <Route path={`card/:id`} element={<DetailedCard addToDeck={addCardToDeck} getDetailedCard={getDetailedCard} />} />
-            <Route path={`deck`} element={<DeckHandler deckInfo={deckInfo} setDeckInfo={setDeckInfo} deckUUID={deckUUID} setDeckUUID={setDeckUUID} getDetailedCard={getDetailedCard} user={user} deck={deck} setDeck={setDeck} userDecks={userDecks} isLoggedIn={isLoggedIn} setUserDecks={setUserDecks} />} />
-            <Route path={`deck/:id`} element={<DeckHandler deckInfo={deckInfo} setDeckInfo={setDeckInfo} deckUUID={deckUUID} setDeckUUID={setDeckUUID} getDetailedCard={getDetailedCard} user={user} deck={deck} setDeck={setDeck} userDecks={userDecks} isLoggedIn={isLoggedIn} setUserDecks={setUserDecks} />} />
+            <Route path={`deck`} element={<DeckHandler addCardToDeck={addCardToDeck} deckInfo={deckInfo} setDeckInfo={setDeckInfo} deckUUID={deckUUID} setDeckUUID={setDeckUUID} getDetailedCard={getDetailedCard} user={user} deck={deck} setDeck={setDeck} userDecks={userDecks} isLoggedIn={isLoggedIn} setUserDecks={setUserDecks} />} />
+            <Route path={`deck/:id`} element={<DeckHandler addCardToDeck={addCardToDeck} deckInfo={deckInfo} setDeckInfo={setDeckInfo} deckUUID={deckUUID} setDeckUUID={setDeckUUID} getDetailedCard={getDetailedCard} user={user} deck={deck} setDeck={setDeck} userDecks={userDecks} isLoggedIn={isLoggedIn} setUserDecks={setUserDecks} />} />
+            <Route path={`advanced`}  element={<Advanced updateSearchQuery={updateSearchQuery} />} />
         </Routes>
         {loginVisible ?
         <Modal errorMessage={errorMessage} userMethods={userMethods} setLoginVisible={setLoginVisible}/>

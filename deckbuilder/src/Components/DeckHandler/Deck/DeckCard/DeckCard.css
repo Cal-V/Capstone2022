@@ -7,3 +7,8 @@
     color: #6A5480;
     cursor: pointer;
 }
+
+.deck-card {
+    aspect-ratio: 5/8;
+    min-width: 200px
+}

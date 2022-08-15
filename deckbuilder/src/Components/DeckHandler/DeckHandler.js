@@ -3,7 +3,7 @@ import {useEffect,useState} from 'react'
 import Deck from "./Deck/Deck"
 import axios from "axios";
 
-function DeckHandler({deckInfo,setDeckInfo,user,deck,setDeck,userDecks,setUserDecks,getDetailedCard,deckUUID,setDeckUUID}) {
+function DeckHandler({deckInfo,setDeckInfo,user,deck,setDeck,userDecks,setUserDecks,getDetailedCard,deckUUID,setDeckUUID,addCardToDeck}) {
 
     const [notFoundArray,setNotFoundArray] = useState([])
 
@@ -22,7 +22,9 @@ function DeckHandler({deckInfo,setDeckInfo,user,deck,setDeck,userDecks,setUserDe
     }
 
     const getDeckCards = async (cardInput) => {
+        console.log("Get Deck Cards")
         let identifiers = [];
+        cardInput = cardInput || []
         cardInput.forEach(id => {
             identifiers.push({id:id.id})
         })
@@ -68,6 +70,7 @@ function DeckHandler({deckInfo,setDeckInfo,user,deck,setDeck,userDecks,setUserDe
     }
 
     const getDeckCardsWithNums = async (cardInfo) => {
+        console.log("Get deck cards with data")
         let identifiers = []
         cardInfo.forEach(card => {
             identifiers.push(card.id)
@@ -102,6 +105,7 @@ function DeckHandler({deckInfo,setDeckInfo,user,deck,setDeck,userDecks,setUserDe
                 updatedCards.push(card)
             }
         })
+        console.log(updatedCards)
         setDeck(updatedCards)
         //console.log("Cards not Found",response.data.not_found)
     }
@@ -193,21 +197,6 @@ function DeckHandler({deckInfo,setDeckInfo,user,deck,setDeck,userDecks,setUserDe
         setUserDecks()
     }
 
-    const updateNewCardData = () => {
-        let deckCards = [...deck]
-        deckCards.forEach(card => {
-            card.num_copies = card.num_copies || 1
-            card.category = card.category || "No Category"
-        });
-        setDeck(deckCards)
-    }
-
-    useEffect(() => {
-        console.log(deck.length)
-        if (deck.length > 0 && deck.some((card) => !card?.num_copies))
-            updateNewCardData()
-    },[deck])
-
     const changeNumCopies = (id,num_copies) => {
         let deckCards = []
         deck.forEach(card => {
@@ -223,7 +212,7 @@ function DeckHandler({deckInfo,setDeckInfo,user,deck,setDeck,userDecks,setUserDe
     }
 
     return (
-        <Deck swapPrintings={swapPrintings} notFoundArray={notFoundArray} getNamedCard={getNamedCard} getDeckCardsWithNums={getDeckCardsWithNums} deckInfo={deckInfo} setDeckInfo={setDeckInfo} getDetailedCard={getDetailedCard} changeNum={changeNumCopies} userDecks={userDecks} deck={deck} setDeck={setDeck} deckIdFunctions={{deckUUID,setDeckUUID}} deckFunctions={{removeCard,createDeck,loadDeck,deleteDeck,updateDeck,}}/>
+        <Deck addCardToDeck={addCardToDeck} swapPrintings={swapPrintings} notFoundArray={notFoundArray} getNamedCard={getNamedCard} getDeckCardsWithNums={getDeckCardsWithNums} deckInfo={deckInfo} setDeckInfo={setDeckInfo} getDetailedCard={getDetailedCard} changeNum={changeNumCopies} userDecks={userDecks} deck={deck} setDeck={setDeck} deckIdFunctions={{deckUUID,setDeckUUID}} deckFunctions={{removeCard,createDeck,loadDeck,deleteDeck,updateDeck,}}/>
     )
 }
 

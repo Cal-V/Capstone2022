@@ -11,7 +11,7 @@ function SearchEngineHandler({getDetailedCard,addCardToDeck,addMultipleToDeck}) 
     
     useEffect(() => {
         getCardData(`https://api.scryfall.com/cards/search?${params.query}`)
-    },[])
+    },[params])
 
     const getMore = (url,func,arr) => {
         fetch(url)

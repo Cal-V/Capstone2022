@@ -9,6 +9,10 @@ const CardList = ({cards,getDetailedCard,addToDeck,addMultipleIds}) => {
     //the specific indeces shownm
     const [shownIndexes, setShownIndexes] = useState([0,numPerPage]) //incl,excl
 
+    const [selectedCards,setSelectedCards] = useState([])
+
+    const [canSelect,setCanSelect] = useState(false)
+
     //updating the shown indeces when a new search is loaded
     useEffect(() => {
         setNumPerPage(50)
@@ -37,6 +41,20 @@ const CardList = ({cards,getDetailedCard,addToDeck,addMultipleIds}) => {
         });
         addMultipleIds(ids)
     }
+
+    const updateSelected = (id,selected) => {
+        if (selected) {
+            setSelectedCards([...selectedCards,{id}])
+        } else {
+            setSelectedCards(selectedCards.filter(sID => sID.id != id))
+        }
+    }
+
+    const addSelectedCards = () => {
+        addMultipleIds(selectedCards)
+        setCanSelect(false)
+        setSelectedCards([])
+    }
     
     return (
         <>
@@ -56,13 +74,15 @@ const CardList = ({cards,getDetailedCard,addToDeck,addMultipleIds}) => {
                 )}
             </div>
             <button className='transform-button' onClick={addAllToDeck}>Add All to Deck</button>
+            <button className='transform-button' onClick={() => setCanSelect(!canSelect)}>{canSelect ? "Clear" : "Select Cards"}</button>
+            {canSelect ? <button className='transform-button' onClick={addSelectedCards}>Add Selecetd to Deck</button> : <></>}
             <div className="list-holder">
                 {
                     (cards.length > 0 ?
                     <>
                         {/* showing the cards between the shown page indeces */}
                         {cards.slice(shownIndexes[0],shownIndexes[1]).map((card) => (
-                            <Card key={card.id} card={card} getDetailedCard={getDetailedCard} addToDeck={addToDeck}/>
+                            <Card canSelect={canSelect} updateSelected={updateSelected} key={card.id} card={card} getDetailedCard={getDetailedCard} addToDeck={addToDeck}/>
                         ))}
                     </>
                     : <h4>No cards of that search</h4>)

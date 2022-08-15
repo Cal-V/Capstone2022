@@ -42,7 +42,8 @@ a {
 }
 
 a:hover {
-  color: #FFEBCC;
+  cursor: pointer;
+  color: #88B396;
 }
 
 h1 {

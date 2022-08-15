@@ -1,5 +1,5 @@
 import React from 'react'
-import {useState} from 'react'
+import {useState, useEffect} from 'react'
 import {useNavigate} from 'react-router-dom'
 import "./Nav.css"
 
@@ -10,6 +10,11 @@ function NavBar({updateSearchQuery,getRandomCard,setLoginVisible,handleLogout,is
     const [direction, setDirection] = useState("auto");
 
     const navigate = useNavigate()
+
+    useEffect(() => {
+        console.log(order,direction,searchTerm)
+        updateSearchQuery(order,direction,searchTerm)
+    },[order,direction])
 
     return (
         <>
@@ -31,12 +36,13 @@ function NavBar({updateSearchQuery,getRandomCard,setLoginVisible,handleLogout,is
                     <option value="toughness">Toughness</option>
                 </select>
                 <select className='nav-item nav-select' value={direction} onChange={(e) => setDirection(e.target.value)}>
-                <option value="auto">Auto</option>
-                <option value="asc">Ascending</option>
-                <option value="desc">Desceding</option>
+                    <option value="auto">Auto</option>
+                    <option value="asc">Ascending</option>
+                    <option value="desc">Desceding</option>
                 </select>
                 <button className='nav-button nav-item' onClick={() => navigate(`/deck${(deckUUID?.length > 1 ? `/${deckUUID}` : "")}`)}>See Deck</button>
                 <button className='nav-button nav-item' onClick={() => getRandomCard()}>Random Card</button>
+                <button className='nav-button nav-item' onClick={() => navigate("/advanced")}>Advanced Search</button>
                 {isLoggedIn ? 
                     <button className='nav-button nav-item nav-button-right' onClick={() => handleLogout()}>Logout</button>
                     :

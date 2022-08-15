@@ -28,7 +28,7 @@ function DeckCard({card,changeNumCards,image,getDetailedCard,swapPrintings}) {
     const card_faces = (card.card_faces ? card.card_faces : [card])
 
     return (
-        <div className=''>
+        <div className='card-list-item deck-card'>
             {/* checking if the card has a defined back side */}
             {!card.image_uris ? 
             <a className='deck-card-link' onClick={() => getDetailedCard(card.id)}>

@@ -4,15 +4,15 @@ import DeckText from './DeckText.js'
 import "./Deck.css"
 import { useNavigate, useParams } from 'react-router-dom'
 import CategoryList from "./CategoryList"
+import axios from 'axios'
 
-function Deck({setDeck,deck,deckIdFunctions,deckFunctions,userDecks,changeNum,getDetailedCard,deckInfo,setDeckInfo,getDeckCardsWithNums,getNamedCard,notFoundArray,swapPrintings}) {
+function Deck({addCardToDeck,setDeck,deck,deckIdFunctions,deckFunctions,userDecks,changeNum,getDetailedCard,deckInfo,setDeckInfo,getDeckCardsWithNums,getNamedCard,notFoundArray,swapPrintings}) {
 
     const params = useParams()
 
     useEffect(() => {
-        if (params.id) {
+        if (params.id != deckIdFunctions.deckU) {
             deckFunctions.loadDeck(params.id)
-            console.log(params.id)
         }
     },[params.id])
 
@@ -26,6 +26,8 @@ function Deck({setDeck,deck,deckIdFunctions,deckFunctions,userDecks,changeNum,ge
     const [categoryList,setCategoryList] = useState("")
     //the format of the file for export
     const [fileFormat,setFileFormat] = useState("full")
+
+    const [nameSearchOutput,setNameSearchOutput] = useState([])
 
     const navigate = useNavigate()
 
@@ -156,9 +158,12 @@ function Deck({setDeck,deck,deckIdFunctions,deckFunctions,userDecks,changeNum,ge
                 }
             }
         })
-        //if the ids exist, sending them to the parent to update the deck
+        //if the ids exist, sending them to the parent to update the deck, else setting the deck to an empty array
         if (newIds.length > 0)
             getDeckCardsWithNums(newIds)
+        else {
+            setDeck([])
+        }
     }
 
     //getting a text output of the deck
@@ -222,7 +227,6 @@ function Deck({setDeck,deck,deckIdFunctions,deckFunctions,userDecks,changeNum,ge
     }
 
     const updateDeckCategories = (cards,category) => {
-        console.log("Deck",cards.length,category)
         cards = cards.map(card => (
             {...card,category}
         ))
@@ -236,13 +240,11 @@ function Deck({setDeck,deck,deckIdFunctions,deckFunctions,userDecks,changeNum,ge
                 if (!cards.some(card => card.id == dCard.id))
                     keptCards.push(dCard)
             })
-            console.log("Kept cards",keptCards.length)
             cards.forEach(card => {
                 let newCard = deck.filter(dCard => dCard.id == card.id)[0]
                 if (newCard?.id)
                     newCards.push({...newCard,category})
             })
-            console.log("Deck New Cards",newCards)
             let newDeck = [...newCards,...keptCards]
             let newDeckSorted = newDeck.sort((a,b) => a.id - b.id)
             let deckSorted = deck.sort((a,b) => a.id - b.id)
@@ -253,10 +255,27 @@ function Deck({setDeck,deck,deckIdFunctions,deckFunctions,userDecks,changeNum,ge
                 }
             }
             if (changed) {
-                console.log(newDeck.filter(card => card.category == category))
                 setDeck(newDeck)
             }
         }
+    }
+
+    const handleNameSearch = async (evt) => {
+        const query = evt.target.value;
+        if (query.length >= 4) {
+            const response = await axios.get(`https://api.scryfall.com/cards/autocomplete?q=${query}`)
+            if (response?.data?.data) {
+                setNameSearchOutput(response.data.data)
+            }
+        } else {
+            setNameSearchOutput([])
+        }
+    }
+
+    const addNamedToDeck = async (name) => {
+        const card = await getNamedCard(name)
+        if (card?.id)
+            await addCardToDeck(card.id)
     }
 
     return (
@@ -319,8 +338,17 @@ function Deck({setDeck,deck,deckIdFunctions,deckFunctions,userDecks,changeNum,ge
             <div className='deck-holder'>
                 {/* the text file and its functions */}
                 <div className='deck-text-holder inline-block'>
+                    <input type="text" placeholer="Quick name search" onChange={handleNameSearch} />
+                    <br />
+                    <strong>Found Cards</strong>
+                    <ul>{
+                        nameSearchOutput.map(name => (
+                            <li key={name}><a onClick={() => addNamedToDeck(name)}>{name}</a></li>
+                        ))
+                    }</ul>
+                    <br />
                     <p>Categories</p>
-                    <textarea value={categoryList} onChange={(evt) => setCategoryList(evt.target.value)} rows={categoryList.split("\n").length}></textarea>
+                    <textarea value={categoryList} onChange={(evt) => setCategoryList(evt.target.value)} rows={categoryList.split("\n").length+1}></textarea>
                     <br />
                     <br />
                     <DeckText categoryList={categoryList} notFoundArray={notFoundArray} getNamedCard={getNamedCard} getIdentifiers={getFileIdentifiers} deck={groupedCards} formatText={formatForFile}/>
@@ -331,7 +359,7 @@ function Deck({setDeck,deck,deckIdFunctions,deckFunctions,userDecks,changeNum,ge
                         {
                             (groupedCards.length > 0 ?
                             <>{
-                                categoryList.split("\n").map((category,index) => (
+                                categoryList.split("\n").map((category) => (
                                     <div key={category}>
                                         <h3>{category}</h3>
                                         <CategoryList deck={deck} category={category} updateDeck={updateDeckCategories} swapPrintings={swapPrintings} getDetailedCard={getDetailedCard} images={images} changeNumCards={changeNumCards} removeCard={deckFunctions.removeCard}/>

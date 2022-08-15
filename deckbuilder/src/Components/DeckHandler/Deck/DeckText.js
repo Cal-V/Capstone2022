@@ -8,6 +8,8 @@ function DeckText({deck,formatText,getIdentifiers,getNamedCard,notFoundArray,cat
     //the array of lines not found when updated cards
     const [notFound,setNotFound] = useState([])
 
+    let keyPresses = []
+
     //getting the formatted text ofthe cards in the deck and updating the text box every time the deck changes
     useEffect(() => {
         setFileText(formatText())
@@ -101,12 +103,21 @@ function DeckText({deck,formatText,getIdentifiers,getNamedCard,notFoundArray,cat
         }
     } 
 
+    const handleKeyPress = (evt) => {
+        keyPresses = [...keyPresses,evt.key]
+        if (keyPresses?.[keyPresses.length-2] == "Control" && (keyPresses[keyPresses.length-1] == "s" || keyPresses[keyPresses.length-1] == "S")){
+            evt.preventDefault()
+            keyPresses = []
+            updateCards(fileText)
+        }
+    }
+
     return (
         <div>
             <button className='transform-button deck-text-button' onClick={() => updateCards(fileText)}>Update Cards</button>
             <button className='transform-button deck-text-button' onClick={() => copyToClipboard(true)}>Copy Text</button>
             <button className='transform-button deck-text-button' onClick={() => copyToClipboard(false)}>Copy Names</button>
-            <textarea rows={fileText.split("\n").length} onChange={(evt) => setFileText(evt.target.value)} name="text" value={fileText}></textarea>
+            <textarea onKeyDown={handleKeyPress} rows={fileText.split("\n").length} onChange={(evt) => setFileText(evt.target.value)} name="text" value={fileText}></textarea>
             <button className='transform-button deck-text-button' onClick={() => updateCards(fileText)}>Update Cards</button>
             <button className='transform-button deck-text-button' onClick={() => copyToClipboard(true)}>Copy Text</button>
             <button className='transform-button deck-text-button' onClick={() => copyToClipboard(false)}>Copy Names</button>
