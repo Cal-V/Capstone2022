@@ -9,17 +9,22 @@ function List({deck,category,updateDeck,changeNumCards,images,getDetailedCard,sw
     const [changedLocally,setChangedLocally] = useState(false)
 
     useEffect(() => {
+        if (category == "Ramp"){
+            console.log("Deck Category length",deck.filter(d => d.category == category).length)
+            console.log("Cards Category length",cards.length)
+        }
         if (deck.length == 0) {
             setCards([])
         }
         if (!changedLocally) {
             if (deck.filter(d => d.category == category).length != cards.length) {
+                console.log("different length")
                 setCards(deck.filter(d => d.category == category))
             } else {
                 let newCardData = []
                 let changed = false;
                 cards.forEach(card => {
-                    let newCard = deck.filter(d => d.id == card.id)[0]
+                    let newCard = deck.filter(d => d.oracle_id == card.oracle_id)[0]
                     if (newCard?.id) {
                         newCardData.push({...newCard,category})
                     }

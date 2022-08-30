@@ -18,6 +18,7 @@ function DeckHandler({deckInfo,setDeckInfo,user,deck,setDeck,userDecks,setUserDe
                 cards[i] = {...res.data,num_copies,category}
             }
         }
+        console.log(cards.length)
         setDeck(cards)
     }
 

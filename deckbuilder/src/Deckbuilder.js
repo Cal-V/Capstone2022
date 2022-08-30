@@ -17,6 +17,7 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user,e
     const [deck,setDeck] = useState([])
     const [deckUUID, setDeckUUID] = useState(null)
 
+    const [searchTerm, setSearchTerm] = useState("");
     const [searchQuery,setSearchQuery] = useState("order=name&dir=auto&q=")
 
     useEffect(() => {
@@ -85,13 +86,15 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user,e
         /card/search q={searchquery}
         /deck/{userId (can be null if not logged in)}/{deckId (can be null if unsaved deck)}
         */}
-        <NavBar deck={deck} deckInfo={deckInfo} deckUUID={deckUUID} handleLogout={userMethods.handleLogout} getRandomCard={getRandomCard} updateSearchQuery={updateSearchQuery} setLoginVisible={setLoginVisible} isLoggedIn={isLoggedIn} loginVisible={loginVisible}/>
+        <NavBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} deck={deck} deckInfo={deckInfo} deckUUID={deckUUID} handleLogout={userMethods.handleLogout} getRandomCard={getRandomCard} updateSearchQuery={updateSearchQuery} setLoginVisible={setLoginVisible} isLoggedIn={isLoggedIn} loginVisible={loginVisible}/>
         <Routes>
             <Route path={`search/:query`} element={<SearchEngineHandler addMultipleToDeck={addMultipleToDeck} getDetailedCard={getDetailedCard} deck={deck} loginVisible={loginVisible} setLoginVisible={setLoginVisible} handleLogout={userMethods.handleLogout} setDetailedCard={getDetailedCard} addCardToDeck={addCardToDeck} setDeck={setDeck}/>} />
             <Route path={`card/:id`} element={<DetailedCard addToDeck={addCardToDeck} getDetailedCard={getDetailedCard} />} />
+            <Route path={`card/random`} element={<DetailedCard getRandomCard={getRandomCard} addToDeck={addCardToDeck} getDetailedCard={getDetailedCard} />} />
+            <Route path={`/`} element={<DetailedCard getRandomCard={getRandomCard} addToDeck={addCardToDeck} getDetailedCard={getDetailedCard} />} />
             <Route path={`deck`} element={<DeckHandler addCardToDeck={addCardToDeck} deckInfo={deckInfo} setDeckInfo={setDeckInfo} deckUUID={deckUUID} setDeckUUID={setDeckUUID} getDetailedCard={getDetailedCard} user={user} deck={deck} setDeck={setDeck} userDecks={userDecks} isLoggedIn={isLoggedIn} setUserDecks={setUserDecks} />} />
             <Route path={`deck/:id`} element={<DeckHandler addCardToDeck={addCardToDeck} deckInfo={deckInfo} setDeckInfo={setDeckInfo} deckUUID={deckUUID} setDeckUUID={setDeckUUID} getDetailedCard={getDetailedCard} user={user} deck={deck} setDeck={setDeck} userDecks={userDecks} isLoggedIn={isLoggedIn} setUserDecks={setUserDecks} />} />
-            <Route path={`advanced`}  element={<Advanced updateSearchQuery={updateSearchQuery} />} />
+            <Route path={`/advanced`} element={<Advanced setSearchTerm={setSearchTerm} updateSearchQuery={updateSearchQuery} />} />
         </Routes>
         {loginVisible ?
         <Modal errorMessage={errorMessage} userMethods={userMethods} setLoginVisible={setLoginVisible}/>

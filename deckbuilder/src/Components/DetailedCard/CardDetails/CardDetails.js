@@ -6,7 +6,7 @@ import "./CardDetails.css"
 import axios from "axios";
 import {useParams} from 'react-router-dom'
 
-function CardDetails({addToDeck,getDetailedCard}) {
+function CardDetails({addToDeck,getDetailedCard,getRandomCard}) {
 
     const [card,setCard] = useState({})
 
@@ -17,10 +17,18 @@ function CardDetails({addToDeck,getDetailedCard}) {
     }
 
     const params = useParams()
+
+    useEffect(() => {
+        if (getRandomCard) {
+            getRandomCard()
+        }
+    })
     
     useEffect(() => {
         getCard(params.id)
     },[params])
+
+    
     
     //card_faces and transformIndex same as Card and DeckCard
     const card_faces = (card.card_faces ? card.card_faces : [card])

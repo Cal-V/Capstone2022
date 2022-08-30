@@ -1,11 +1,10 @@
 import React from 'react'
 import {useState, useEffect} from 'react'
-import {useNavigate} from 'react-router-dom'
+import {useNavigate,useParams} from 'react-router-dom'
 import "./Nav.css"
 
-function NavBar({updateSearchQuery,getRandomCard,setLoginVisible,handleLogout,isLoggedIn,loginVisible,deckUUID,deck,deckInfo}) {
+function NavBar({updateSearchQuery,getRandomCard,setLoginVisible,handleLogout,isLoggedIn,loginVisible,deckUUID,deck,deckInfo,searchTerm, setSearchTerm}) {
 
-    const [searchTerm, setSearchTerm] = useState("");
     const [order, setOrder] = useState("name");
     const [direction, setDirection] = useState("auto");
 

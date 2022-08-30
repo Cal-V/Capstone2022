@@ -31,6 +31,18 @@ function Deck({addCardToDeck,setDeck,deck,deckIdFunctions,deckFunctions,userDeck
 
     const navigate = useNavigate()
 
+    useEffect(() => {
+        console.log(categoryList)
+        let categories = categoryList.split("\n")
+        let newList = ""
+        categories.forEach(category => {
+            if (!newList.includes(category))
+                newList += category + "\n"
+        })
+        if (newList.trim() != categoryList.trim())
+            setCategoryList(newList.trim())
+    },[categoryList])
+
     //initiating the file download when the url updates
     useEffect(() => {
         if (fileDownloadUrl) {
@@ -48,12 +60,12 @@ function Deck({addCardToDeck,setDeck,deck,deckIdFunctions,deckFunctions,userDeck
     //organising the cards into their categories when the deck is updated
     useEffect(() => {
         setIsSaved(false)
-        let newList = `${categoryList}\n`
-        let categories = categoryList.split("\n")
+        let newList = ""
+        let categories = []
         deck.forEach(card => {
             if (!categories.includes(card.category)) {
-                categories.push(card.category)
-                newList += `${card.category}\n`
+                if (!newList.includes(card.category))
+                    newList += `${card.category}\n`
             }
         })
         setCategoryList(newList.trim())
@@ -93,6 +105,7 @@ function Deck({addCardToDeck,setDeck,deck,deckIdFunctions,deckFunctions,userDeck
 
     //reads in the input file and updates the deck
     const handleFileInput = (evt) => {
+        console.log("File")
         const file = evt.target.files[0]
         let reader = new FileReader();
         reader.readAsText(file);
@@ -126,6 +139,7 @@ function Deck({addCardToDeck,setDeck,deck,deckIdFunctions,deckFunctions,userDeck
 
     //getting the cards based on input text - assumes mostly correct formatting
     const getFileIdentifiers = (fileText) => {
+        console.log(fileText)
         //for holding the ids
         let newIds = []
         //splitting into individual lines to iterate through
@@ -136,7 +150,9 @@ function Deck({addCardToDeck,setDeck,deck,deckIdFunctions,deckFunctions,userDeck
         fileText = fileText.forEach(line => {
             //updating the category if it matches the format
             if (line.match(/\*\*[A-Za-z 0-9,./\\]+\*\*/)) {
-                category = line.substring(2,line.length-2)
+                console.log(line.length)
+                console.log(line.substring(line.length-1))
+                category = line.trim().replaceAll("*","")
             } else if (line.length > 0) {
                 //nostly used to get the number of copies (the first index) and the collector number (the last index)
                 let split = line.split(" ")
@@ -159,8 +175,10 @@ function Deck({addCardToDeck,setDeck,deck,deckIdFunctions,deckFunctions,userDeck
             }
         })
         //if the ids exist, sending them to the parent to update the deck, else setting the deck to an empty array
-        if (newIds.length > 0)
+        if (newIds.length > 0) {
             getDeckCardsWithNums(newIds)
+            console.log(newIds)
+        }
         else {
             setDeck([])
         }

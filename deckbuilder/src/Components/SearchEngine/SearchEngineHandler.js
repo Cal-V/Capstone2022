@@ -2,7 +2,7 @@ import React from 'react'
 import CardList from './CardList/CardList.js';
 import {useState, useEffect} from 'react'
 import axios from "axios";
-import {useParams, useNavigate} from 'react-router-dom';
+import {useParams} from 'react-router-dom';
 
 function SearchEngineHandler({getDetailedCard,addCardToDeck,addMultipleToDeck}) {
     const [cards, setCards] = useState([]);
