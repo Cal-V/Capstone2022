@@ -21,6 +21,10 @@ function Deckbuilder({userMethods,isLoggedIn,loginVisible,setLoginVisible,user,e
     const [searchQuery,setSearchQuery] = useState("order=name&dir=auto&q=")
 
     useEffect(() => {
+        console.log("Test")
+    },[])
+    
+    useEffect(() => {
         console.log("Deck updated", deck.length)
     },[deck])
 

@@ -21,27 +21,14 @@ function Deck({addCardToDeck,setDeck,deck,deckIdFunctions,deckFunctions,userDeck
     const [images,setImages] = useState(true)
     //bool for marking if this version of the deck has been saved to the database
     const [isSaved,setIsSaved] = useState(true)
-    //the deck card list, organised by categories
-    const [groupedCards,setGroupedCards] = useState([])
-    const [categoryList,setCategoryList] = useState("")
     //the format of the file for export
     const [fileFormat,setFileFormat] = useState("full")
 
     const [nameSearchOutput,setNameSearchOutput] = useState([])
 
-    const navigate = useNavigate()
+    const [deckCategories,setDeckCategories] = useState([])
 
-    useEffect(() => {
-        console.log(categoryList)
-        let categories = categoryList.split("\n")
-        let newList = ""
-        categories.forEach(category => {
-            if (!newList.includes(category))
-                newList += category + "\n"
-        })
-        if (newList.trim() != categoryList.trim())
-            setCategoryList(newList.trim())
-    },[categoryList])
+    const navigate = useNavigate()
 
     //initiating the file download when the url updates
     useEffect(() => {
@@ -52,27 +39,16 @@ function Deck({addCardToDeck,setDeck,deck,deckIdFunctions,deckFunctions,userDeck
         }
     },[fileDownloadUrl])
 
-    //clearing the category list when the deck changes
-    useEffect(() => {
-        setCategoryList("")
-    },[deckIdFunctions.deckUUID])
-
     //organising the cards into their categories when the deck is updated
     useEffect(() => {
         setIsSaved(false)
-        let newList = ""
-        let categories = []
+        let cats = []
         deck.forEach(card => {
-            if (!categories.includes(card.category)) {
-                if (!newList.includes(card.category))
-                    newList += `${card.category}\n`
-            }
+            if (!cats.includes(card.category))
+                cats.push(card.category)
         })
-        setCategoryList(newList.trim())
-        let cards = deck.sort((a,b) => {
-            return categories.findIndex(category => category == a.category) - categories.findIndex(category => category == b.category)
-        })
-        setGroupedCards(cards)
+        setDeckCategories(cats)
+        console.log(cats)
     },[deck])
 
     //checking if the deck is legal when the format or the deck changes
@@ -99,7 +75,6 @@ function Deck({addCardToDeck,setDeck,deck,deckIdFunctions,deckFunctions,userDeck
         evt.preventDefault();
         deckFunctions.deleteDeck(deckIdFunctions.deckUUID)
         setDeck([])
-        setCategoryList("")
         navigate("/deck")
     }
 
@@ -189,33 +164,19 @@ function Deck({addCardToDeck,setDeck,deck,deckIdFunctions,deckFunctions,userDeck
         //for either partial or full text, defaults to full
         let outputType = useFormat ? fileFormat : "full"
         let deckData = ""
-        //grabbing the first category
-        let category = groupedCards[0]?.category
-        //if it's full text, adding the category
-        deckData += outputType == 'full' ? (category ? `**${category}**\n` : "") : ""
-        //iterating through the grouped cards
-        groupedCards.forEach(card => {
-            //adding the category to the text and changing it to the next one if it's a format that includes those
-            if (outputType == "full" && card.category != category) {
-                category = card.category
-                deckData += `**${category}**\n`
-            }
-            //updating the text based on the output format
-            switch (outputType) {
-                case "full" :
-                case "nocat" : deckData += `${card.num_copies || 1} ${card.name} (${card.set}) ${card.collector_number}\n`; break;
-                case "names" : deckData += `${card.name}\n`; break;
-                case "copies": deckData += `${card.num_copies || 1} ${card.name}\n`; break;
-            }
-        });
-        //adding the extra categories to the end if they're listed
-        if (outputType == "full") {
-            categoryList.split("\n").forEach(category => {
-                if (category && !deckData.includes(`**${category}**`)) {
-                    deckData += `**${category}**\n`
+        
+        deckCategories.forEach(category => {
+            deckData += outputType == 'full' ? (category ? `**${category}**\n` : "") : ""
+            deck.filter(card => card.category == category).forEach(card => {
+                //updating the text based on the output format
+                switch (outputType) {
+                    case "full" :
+                    case "nocat" : deckData += `${card.num_copies || 1} ${card.name} (${card.set}) ${card.collector_number}\n`; break;
+                    case "names" : deckData += `${card.name}\n`; break;
+                    case "copies": deckData += `${card.num_copies || 1} ${card.name}\n`; break;
                 }
-            })
-        }
+            });
+        })
         return deckData
     }
 
@@ -238,7 +199,6 @@ function Deck({addCardToDeck,setDeck,deck,deckIdFunctions,deckFunctions,userDeck
                 deckFunctions.loadDeck(id);
             } else {
                 setDeck([])
-                setCategoryList("")
             }
         }
         navigate(`/deck/${id}`)
@@ -263,7 +223,14 @@ function Deck({addCardToDeck,setDeck,deck,deckIdFunctions,deckFunctions,userDeck
                 if (newCard?.id)
                     newCards.push({...newCard,category})
             })
-            let newDeck = [...newCards,...keptCards]
+            let newDeck = []
+            deckCategories.forEach(dcategory => {
+                if (dcategory != category) {
+                    newDeck = [...newDeck,...keptCards.filter(card => card.category == dcategory)]
+                } else {
+                    newDeck = [...newDeck,...newCards]
+                }
+            })
             let newDeckSorted = newDeck.sort((a,b) => a.id - b.id)
             let deckSorted = deck.sort((a,b) => a.id - b.id)
             for (let i = 0; i < deck.length; i++) {
@@ -365,19 +332,15 @@ function Deck({addCardToDeck,setDeck,deck,deckIdFunctions,deckFunctions,userDeck
                         ))
                     }</ul>
                     <br />
-                    <p>Categories</p>
-                    <textarea value={categoryList} onChange={(evt) => setCategoryList(evt.target.value)} rows={categoryList.split("\n").length+1}></textarea>
-                    <br />
-                    <br />
-                    <DeckText categoryList={categoryList} notFoundArray={notFoundArray} getNamedCard={getNamedCard} getIdentifiers={getFileIdentifiers} deck={groupedCards} formatText={formatForFile}/>
+                    <DeckText notFoundArray={notFoundArray} getNamedCard={getNamedCard} getIdentifiers={getFileIdentifiers} deck={deck} formatText={formatForFile}/>
                 </div>
                 {/* the deck itself */}
                 <div className='deck-holder inline-block'>
                     <div className='deck-list-holder'>
                         {
-                            (groupedCards.length > 0 ?
+                            (deck.length > 0 ?
                             <>{
-                                categoryList.split("\n").map((category) => (
+                                deckCategories.map((category) => (
                                     <div key={category}>
                                         <h3>{category}</h3>
                                         <CategoryList deck={deck} category={category} updateDeck={updateDeckCategories} swapPrintings={swapPrintings} getDetailedCard={getDetailedCard} images={images} changeNumCards={changeNumCards} removeCard={deckFunctions.removeCard}/>

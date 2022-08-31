@@ -2,12 +2,13 @@ import React from 'react'
 import CardList from './CardList/CardList.js';
 import {useState, useEffect} from 'react'
 import axios from "axios";
-import {useParams} from 'react-router-dom';
+import {useParams,useNavigate} from 'react-router-dom';
 
 function SearchEngineHandler({getDetailedCard,addCardToDeck,addMultipleToDeck}) {
     const [cards, setCards] = useState([]);
 
     const params = useParams()
+    const navigate = useNavigate()
     
     useEffect(() => {
         getCardData(`https://api.scryfall.com/cards/search?${params.query}`)
@@ -23,12 +24,12 @@ function SearchEngineHandler({getDetailedCard,addCardToDeck,addMultipleToDeck}) 
         })
     }
 
-    // useEffect(() => {
-    //     if (cards.length == 1) {
-    //         navigate(`/card/${cards[0].id}`)
-    //         setCards([])
-    //     }
-    // },[cards])
+    useEffect(() => {
+        if (cards?.length == 1) {
+            navigate(`/card/${cards[0].id}`)
+            setCards([])
+        }
+    },[cards])
 
     const getCardData = (url) => {
         fetch(url)

@@ -1,7 +1,7 @@
 import React from 'react'
 import { useState, useEffect } from 'react'
 
-function DeckText({deck,formatText,getIdentifiers,getNamedCard,notFoundArray,categoryList}) {
+function DeckText({deck,formatText,getIdentifiers,getNamedCard,notFoundArray}) {
 
     //the text in the text box
     const [fileText,setFileText] = useState(formatText())
@@ -64,12 +64,6 @@ function DeckText({deck,formatText,getIdentifiers,getNamedCard,notFoundArray,cat
                 }
             }
         }
-        //adding unused categories to the bottom of the list
-        categoryList.split("\n").forEach(category => {
-            if (!textLines.includes(`**${category}**`)) {
-                textLines += `**${category}**\n`
-            }
-        })
         //updating the text box with the new text
         setFileText(textLines)
         //getting the identifiers with the formatted text

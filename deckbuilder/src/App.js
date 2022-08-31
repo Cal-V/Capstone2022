@@ -21,8 +21,6 @@ function App() {
   //for showing the login modal
   const [loginVisible,setLoginVisible] = useState(false)
 
-  
-
   //checking the local storage for the cookie for the user being logged in on load
   useEffect(() => {
     //getting the logged in user from the cookie in local storage if it exists

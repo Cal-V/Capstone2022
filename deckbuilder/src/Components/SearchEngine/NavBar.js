@@ -1,6 +1,6 @@
 import React from 'react'
 import {useState, useEffect} from 'react'
-import {useNavigate,useParams} from 'react-router-dom'
+import {useNavigate} from 'react-router-dom'
 import "./Nav.css"
 
 function NavBar({updateSearchQuery,getRandomCard,setLoginVisible,handleLogout,isLoggedIn,loginVisible,deckUUID,deck,deckInfo,searchTerm, setSearchTerm}) {
